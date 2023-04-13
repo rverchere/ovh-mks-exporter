@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/instance: ovh-mks-exporter
+    app.kubernetes.io/name: ovh-mks-exporter
+    app.kubernetes.io/version: 0.1.0
+    release: prom
+  name: prom-ovh-mks-exporter
+spec:
+  endpoints:
+    - port: http-metrics
+      interval: 120s
+      scrapeTimeout: 30s
+  namespaceSelector:
+    matchNames:
+      - observability
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: ovh-mks-exporter
+      app.kubernetes.io/name: ovh-mks-exporter
