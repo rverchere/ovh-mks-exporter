@@ -30,6 +30,14 @@ var (
 	ClusterInfoDesc   = prometheus.NewDesc(ClusterInfoMetric, ClusterInfoHelp,
 		[]string{"id", "region", "name", "version", "status", "update_policy", "is_up_to_date", "control_plane_is_up_to_date"}, nil)
 
+	StorageContainerCountMetric = "ovh_storage_object_count"
+	StorageContainerCountHelp   = "OVH storage containers object count"
+	StorageContainerCountDesc   = prometheus.NewDesc(StorageContainerCountMetric, StorageContainerCountHelp, []string{"id", "region", "name"}, nil)
+
+	StorageContainerUsageMetric = "ovh_storage_object_bytes"
+	StorageContainerUsageHelp   = "OVH storage containers object bytes"
+	StorageContainerUsageDesc   = prometheus.NewDesc(StorageContainerUsageMetric, StorageContainerUsageHelp, []string{"id", "region", "name"}, nil)
+
 	InfoMetric      = "ovh_mks_exporter_build_info"
 	InfoHelp        = "A metric with a constant '1' value labeled with version, revision, build date, Go version, Go OS, and Go architecture"
 	InfoConstLabels = prometheus.Labels{
@@ -55,10 +63,14 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- EtcdUsageQuotaDesc
 	ch <- ClusterIsUpToDateDesc
 	ch <- ClusterInfoDesc
+	ch <- StorageContainerCountDesc
+	ch <- StorageContainerUsageDesc
 	ch <- InfoDesc
 }
 
 func (collector *collector) Collect(ch chan<- prometheus.Metric) {
+
+	/* Kubernetes Managed Cluster information */
 	var Clusters []string = GetClusters(Client, ServiceName)
 
 	for _, KubeId := range Clusters {
@@ -96,6 +108,26 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 		)
 	}
 
+	/* Storage Containers (Swift) information */
+	var StorageContainers []StorageContainers = GetStorageContainers(Client, ServiceName)
+
+	for _, StorageContainer := range StorageContainers {
+		ch <- prometheus.MustNewConstMetric(
+			StorageContainerCountDesc,
+			prometheus.GaugeValue,
+			float64(StorageContainer.StoredObjects),
+			StorageContainer.ID, StorageContainer.Region, StorageContainer.Name,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			StorageContainerUsageDesc,
+			prometheus.GaugeValue,
+			float64(StorageContainer.StoredBytes),
+			StorageContainer.ID, StorageContainer.Region, StorageContainer.Name,
+		)
+
+	}
+
+	/* Application Information */
 	ch <- prometheus.MustNewConstMetric(
 		InfoDesc,
 		prometheus.GaugeValue,

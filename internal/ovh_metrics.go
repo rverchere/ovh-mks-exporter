@@ -48,6 +48,14 @@ type ClusterDescription struct {
 	UpdatedAt              time.Time   `json:"updatedAt"`
 }
 
+type StorageContainers struct {
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	StoredObjects int    `json:"storedObjects"`
+	StoredBytes   int    `json:"storedBytes"`
+	Region        string `json:"region"`
+}
+
 func GetClusterEtcdUsage(client *ovh.Client, ServiceName string, KubeId string) EtcdUsage {
 
 	EtcdUsageUrl := fmt.Sprintf("/cloud/project/%s/kube/%s/metrics/etcdUsage", ServiceName, KubeId)
@@ -77,15 +85,32 @@ func GetClusterDescription(client *ovh.Client, ServiceName string, KubeId string
 
 func GetClusters(client *ovh.Client, ServiceName string) []string {
 
-	Clusters := fmt.Sprintf("/cloud/project/%s/kube", ServiceName)
+	ClustersUrl := fmt.Sprintf("/cloud/project/%s/kube", ServiceName)
 	var res []string
 
-	err := client.Get(Clusters, &res)
+	err := client.Get(ClustersUrl, &res)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Info("Getting Clusters ID")
+	return res
+
+}
+
+func GetStorageContainers(client *ovh.Client, ServicName string) []StorageContainers {
+
+	StorageContainersUrl := fmt.Sprintf("/cloud/project/%s/storage", ServiceName)
+
+	var res []StorageContainers
+
+	err := client.Get(StorageContainersUrl, &res)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Info("Getting Storage Containers information")
+
 	return res
 
 }
