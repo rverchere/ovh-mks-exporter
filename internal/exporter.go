@@ -1,8 +1,9 @@
 package internal
 
 import (
-	"log"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -24,6 +25,8 @@ func (exporter *Exporter) NewExporter() error {
 			return err
 		}
 	}
+
+	log.Info("Starting exporter, enjoy!")
 
 	http.Handle("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(":9101", nil))

@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"runtime"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -14,22 +15,24 @@ var (
 	/* Prometheus related vars */
 	EtcdUsageUsageMetric = "ovh_mks_etcd_usage_usage_bytes"
 	EtcdUsageUsageHelp   = "OVH Managed Kubernetes Service ETCD Usage"
-	EtcdUsageUsageDesc   = prometheus.NewDesc(EtcdUsageUsageMetric, EtcdUsageUsageHelp, nil, nil)
+	EtcdUsageUsageDesc   = prometheus.NewDesc(EtcdUsageUsageMetric, EtcdUsageUsageHelp, []string{"id", "region", "name", "version"}, nil)
 
 	EtcdUsageQuotaMetric = "ovh_mks_etcd_usage_quota_bytes"
 	EtcdUsageQuotaHelp   = "OVH Managed Kubernetes Service ETCD Quota"
-	EtcdUsageQuotaDesc   = prometheus.NewDesc(EtcdUsageQuotaMetric, EtcdUsageQuotaHelp, nil, nil)
+	EtcdUsageQuotaDesc   = prometheus.NewDesc(EtcdUsageQuotaMetric, EtcdUsageQuotaHelp, []string{"id", "region", "name", "version"}, nil)
 
 	ClusterIsUpToDateMetric = "ovh_mks_cluster_isuptodate"
 	ClusterIsUpToDateHelp   = "OVH Managed Kubernetes Service has a pending security/patch upgrade"
-	ClusterIsUpToDateDesc   = prometheus.NewDesc(ClusterIsUpToDateMetric, ClusterIsUpToDateHelp, nil, nil)
+	ClusterIsUpToDateDesc   = prometheus.NewDesc(ClusterIsUpToDateMetric, ClusterIsUpToDateHelp, []string{"id", "region", "name", "version"}, nil)
+
+	ClusterInfoMetric = "ovh_mks_cluster_info"
+	ClusterInfoHelp   = "OVH Managed Kubernetes Service Informations"
+	ClusterInfoDesc   = prometheus.NewDesc(ClusterInfoMetric, ClusterInfoHelp,
+		[]string{"id", "region", "name", "version", "status", "update_policy", "is_up_to_date", "control_plane_is_up_to_date"}, nil)
 
 	InfoMetric      = "ovh_mks_exporter_build_info"
 	InfoHelp        = "A metric with a constant '1' value labeled with version, revision, build date, Go version, Go OS, and Go architecture"
 	InfoConstLabels = prometheus.Labels{
-		//"version":   Version,
-		//"revision":  Revision,
-		//"built":     BuildDateTime,
 		"goversion": runtime.Version(),
 		"goos":      runtime.GOOS,
 		"goarch":    runtime.GOARCH,
@@ -38,8 +41,6 @@ var (
 )
 
 func Bool2int(b bool) int {
-	// The compiler currently only optimizes this form.
-	// See issue 6011.
 	var i int
 	if b {
 		i = 1
@@ -53,30 +54,47 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- EtcdUsageUsageDesc
 	ch <- EtcdUsageQuotaDesc
 	ch <- ClusterIsUpToDateDesc
+	ch <- ClusterInfoDesc
 	ch <- InfoDesc
 }
 
 func (collector *collector) Collect(ch chan<- prometheus.Metric) {
-	EtcdUsage := GetClusterEtcdUsage(Client, ServiceName, KubeId)
-	ClusterDescription := GetClusterDescription(Client, ServiceName, KubeId)
+	var Clusters []string = GetClusters(Client, ServiceName)
 
-	ch <- prometheus.MustNewConstMetric(
-		EtcdUsageUsageDesc,
-		prometheus.GaugeValue,
-		float64(EtcdUsage.Usage),
-	)
+	for _, KubeId := range Clusters {
+		EtcdUsage := GetClusterEtcdUsage(Client, ServiceName, KubeId)
+		ClusterDescription := GetClusterDescription(Client, ServiceName, KubeId)
 
-	ch <- prometheus.MustNewConstMetric(
-		EtcdUsageQuotaDesc,
-		prometheus.GaugeValue,
-		float64(EtcdUsage.Quota),
-	)
+		ch <- prometheus.MustNewConstMetric(
+			EtcdUsageUsageDesc,
+			prometheus.GaugeValue,
+			float64(EtcdUsage.Usage),
+			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
+		)
 
-	ch <- prometheus.MustNewConstMetric(
-		ClusterIsUpToDateDesc,
-		prometheus.GaugeValue,
-		float64(Bool2int(ClusterDescription.IsUpToDate)),
-	)
+		ch <- prometheus.MustNewConstMetric(
+			EtcdUsageQuotaDesc,
+			prometheus.GaugeValue,
+			float64(EtcdUsage.Quota),
+			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
+		)
+
+		ch <- prometheus.MustNewConstMetric(
+			ClusterIsUpToDateDesc,
+			prometheus.GaugeValue,
+			float64(Bool2int(ClusterDescription.IsUpToDate)),
+			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
+		)
+
+		ch <- prometheus.MustNewConstMetric(
+			ClusterInfoDesc,
+			prometheus.GaugeValue,
+			float64(1),
+			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
+			ClusterDescription.Status, ClusterDescription.UpdatePolicy,
+			fmt.Sprintf("%t", ClusterDescription.IsUpToDate), fmt.Sprintf("%t", ClusterDescription.ControlPlaneIsUpToDate),
+		)
+	}
 
 	ch <- prometheus.MustNewConstMetric(
 		InfoDesc,
