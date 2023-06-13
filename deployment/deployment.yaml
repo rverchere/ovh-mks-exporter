@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: ovh-mks-exporter
     app.kubernetes.io/name: ovh-mks-exporter
-    app.kubernetes.io/version: 0.1.0
+    app.kubernetes.io/version: 1.1.0
 spec:
   replicas: 1
   selector:
@@ -17,10 +17,10 @@ spec:
       labels:
         app.kubernetes.io/instance: ovh-mks-exporter
         app.kubernetes.io/name: ovh-mks-exporter
-        app.kubernetes.io/version: 0.1.0
+        app.kubernetes.io/version: 1.1.0
     spec:
       containers:
-        - image: rverchere/ovh-mks-exporter:latest
+        - image: rverchere/ovh-mks-exporter:1.1.0
           name: ovh-mks-exporter
           env:
             - name: OVH_ENDPOINT
@@ -48,11 +48,6 @@ spec:
                 secretKeyRef:
                   name: ovh-mks-exporter
                   key: OVH_CLOUDPROJECT_SERVICENAME
-            - name: OVH_CLOUDPROJECT_KUBEID
-              valueFrom:
-                secretKeyRef:
-                  name: ovh-mks-exporter
-                  key: OVH_CLOUDPROJECT_KUBEID
           ports:
             - name: http-metrics
               containerPort: 9101
