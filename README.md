@@ -2,12 +2,13 @@
 
 ⚠️ This is a work in progress project, and I'm learning GO langage with that simple small project. ⚠️
 
-This exporter retrieves 3 information from the OVHcloud API, which are not handled directly with k8s internal metrics:
+This exporter retrieves some information from the OVHcloud API, which are not handled directly with k8s internal metrics:
 - etcd quota usage
 - up-to-date cluster version (to check if a security/patch upgrade is available)
 - general information of the clusters
+- Swift storage (objects and usage)
 
-It retrieves metrics from all clusters defined in a public cloud project.
+It retrieves metrics from all clusters and swift containers defined in a public cloud project.
 
 This exporter is inspired by the https://github.com/enix/x509-certificate-exporter project, thanks to Enix team!
 
@@ -53,6 +54,9 @@ The **servicemonitor** should be changed to match your prometheus installation (
 | ovh_mks_etcd_usage_quota_bytes | ETCD quota  max usage | bytes |
 | ovh_mks_etcd_usage_usage_bytes | ETCD current usage | bytes |
 | ovh_mks_cluster_info | Cluster Information (id, name, region, status, etc) | 1 |
+| ovh_storage_object_count | Swift container object count | count |
+| ovh_storage_object_bytes | Swift container object usage | bytes |
+
 ## Example
 
 ![Grafana Dashboard](docs/grafana.png)

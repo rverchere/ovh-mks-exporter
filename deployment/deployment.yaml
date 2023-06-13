@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: ovh-mks-exporter
     app.kubernetes.io/name: ovh-mks-exporter
-    app.kubernetes.io/version: 1.1.0
+    app.kubernetes.io/version: 1.2.0
 spec:
   replicas: 1
   selector:
@@ -17,10 +17,10 @@ spec:
       labels:
         app.kubernetes.io/instance: ovh-mks-exporter
         app.kubernetes.io/name: ovh-mks-exporter
-        app.kubernetes.io/version: 1.1.0
+        app.kubernetes.io/version: 1.2.0
     spec:
       containers:
-        - image: rverchere/ovh-mks-exporter:1.1.0
+        - image: rverchere/ovh-mks-exporter:1.2.0
           name: ovh-mks-exporter
           env:
             - name: OVH_ENDPOINT
