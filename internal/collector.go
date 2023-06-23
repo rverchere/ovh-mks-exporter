@@ -76,7 +76,7 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 	for _, KubeId := range Clusters {
 		EtcdUsage := GetClusterEtcdUsage(Client, ServiceName, KubeId)
 		ClusterDescription := GetClusterDescription(Client, ServiceName, KubeId)
-
+		GetClusterNodePool(Client, ServiceName, KubeId)
 		ch <- prometheus.MustNewConstMetric(
 			EtcdUsageUsageDesc,
 			prometheus.GaugeValue,
