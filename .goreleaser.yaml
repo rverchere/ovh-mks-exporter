@@ -1,7 +1,9 @@
-project_name: ovh-mks-exporter
-
+before:
+  hooks:
+    - go mod vendor
 builds:
   - binary: bin/ovh-mks-exporter
+    main: ./cmd/ovh-mks-exporter/main.go
     env:
       - CGO_ENABLED=0
     flags:
