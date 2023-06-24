@@ -1,0 +1,15 @@
+project_name: ovh-mks-exporter
+
+builds:
+  - binary: bin/ovh-mks-exporter
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -mod=vendor
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+checksum:
+  name_template: 'checksums.txt'
