@@ -49,13 +49,10 @@ var (
 )
 
 func Bool2int(b bool) int {
-	var i int
 	if b {
-		i = 1
-	} else {
-		i = 0
+		return 1
 	}
-	return i
+	return 0
 }
 
 func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
