@@ -2,16 +2,9 @@ name: Go Releaser
 
 on:
   push:
-    branches:
-      - "main"
-      - "github-actions"
     # Publish semver tags as releases.
     tags:
       - 'v*.*.*'
-  workflow_dispatch:
-  pull_request:
-    branches: 
-      - "main"
 
 permissions:
   contents: write
