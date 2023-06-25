@@ -120,7 +120,7 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 			float64(1),
 			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
 			ClusterDescription.Status, ClusterDescription.UpdatePolicy,
-			strconv.FormatBool(lusterDescription.IsUpToDate), strconv.FormatBool(ClusterDescription.ControlPlaneIsUpToDate),
+			strconv.FormatBool(ClusterDescription.IsUpToDate), strconv.FormatBool(ClusterDescription.ControlPlaneIsUpToDate),
 		)
 	}
 

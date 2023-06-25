@@ -111,7 +111,8 @@ func GetClusterNodePool(client *ovh.Client, ServiceName string, KubeId string) [
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Info(res)
+
+	log.Info("Getting Cluster Node Pools")
 	return res
 }
 
@@ -126,6 +127,7 @@ func GetClusterEtcdUsage(client *ovh.Client, ServiceName string, KubeId string) 
 		log.Fatal(err)
 	}
 
+	log.Info("Getting ETCD Usage")
 	return res
 }
 
@@ -139,6 +141,7 @@ func GetClusterDescription(client *ovh.Client, ServiceName string, KubeId string
 		log.Fatal(err)
 	}
 
+	log.Info("Getting Cluster Description")
 	return res
 }
 
@@ -154,7 +157,6 @@ func GetClusters(client *ovh.Client, ServiceName string) []string {
 
 	log.Info("Getting Clusters ID")
 	return res
-
 }
 
 func GetStorageContainers(client *ovh.Client, ServicName string) []StorageContainers {
@@ -169,7 +171,5 @@ func GetStorageContainers(client *ovh.Client, ServicName string) []StorageContai
 	}
 
 	log.Info("Getting Storage Containers information")
-
 	return res
-
 }
