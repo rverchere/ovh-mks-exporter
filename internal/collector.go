@@ -30,6 +30,11 @@ var (
 	ClusterInfoDesc   = prometheus.NewDesc(ClusterInfoMetric, ClusterInfoHelp,
 		[]string{"id", "region", "name", "version", "status", "update_policy", "is_up_to_date", "control_plane_is_up_to_date"}, nil)
 
+	ClusterNodepoolInfoMetric = "ovh_mks_cluster_nodepool_info"
+	ClusterNodepoolInfoHelp   = "OVH Managed Kubernetes Nodepool informations"
+	ClusterNodepoolInfoDesc   = prometheus.NewDesc(ClusterNodepoolInfoMetric, ClusterNodepoolInfoHelp,
+		[]string{"id", "region", "name", "version", "nodepool_name", "current_nodes", "desired_nodes", "flavor", "max_nodes", "min_nodes", "monthly_billed", "status"}, nil)
+
 	StorageContainerCountMetric = "ovh_storage_object_count"
 	StorageContainerCountHelp   = "OVH storage containers object count"
 	StorageContainerCountDesc   = prometheus.NewDesc(StorageContainerCountMetric, StorageContainerCountHelp, []string{"id", "region", "name"}, nil)
@@ -60,6 +65,7 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- EtcdUsageQuotaDesc
 	ch <- ClusterIsUpToDateDesc
 	ch <- ClusterInfoDesc
+	ch <- ClusterNodepoolInfoDesc
 	ch <- StorageContainerCountDesc
 	ch <- StorageContainerUsageDesc
 	ch <- InfoDesc
@@ -73,7 +79,7 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 	for _, KubeId := range Clusters {
 		EtcdUsage := GetClusterEtcdUsage(Client, ServiceName, KubeId)
 		ClusterDescription := GetClusterDescription(Client, ServiceName, KubeId)
-		GetClusterNodePool(Client, ServiceName, KubeId)
+
 		ch <- prometheus.MustNewConstMetric(
 			EtcdUsageUsageDesc,
 			prometheus.GaugeValue,
@@ -94,6 +100,19 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 			float64(Bool2int(ClusterDescription.IsUpToDate)),
 			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
 		)
+
+		ClusterNodepools := GetClusterNodePool(Client, ServiceName, KubeId)
+		for _, ClusterNodepool in ClusterNodepools {
+			ch <- prometheus.MustNewConstMetric(
+				ClusterNodepoolInfoDesc,
+				prometheus.GaugeValue,
+				float64(1),
+				KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
+				ClusterNodepool.Name, ClusterNodepool.CurrentNodes, ClusterNodepool.DesiredNodes,
+				ClusterNodepool.Flavor, ClusterNodepool.MaxNodes, ClusterNodepool.MinNodes,
+				fmt.Sprintf("%t", ClusterNodepool.MonthlyBilled), ClusterNodepool.Status,
+			)
+		}
 
 		ch <- prometheus.MustNewConstMetric(
 			ClusterInfoDesc,
