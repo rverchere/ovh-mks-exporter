@@ -101,7 +101,7 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
 		)
 
-		ClusterNodepools := GetClusterNodePool(Client, ServiceName, KubeId)
+		var ClusterNodepools []ClusterNodepools = GetClusterNodePool(Client, ServiceName, KubeId)
 		for _, ClusterNodepool in ClusterNodepools {
 			ch <- prometheus.MustNewConstMetric(
 				ClusterNodepoolInfoDesc,
