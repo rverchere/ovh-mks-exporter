@@ -1,8 +1,8 @@
 package internal
 
 import (
-	"fmt"
 	"runtime"
+	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -108,9 +108,9 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 				prometheus.GaugeValue,
 				float64(1),
 				KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
-				ClusterNodepool.Name, ClusterNodepool.CurrentNodes, ClusterNodepool.DesiredNodes,
-				ClusterNodepool.Flavor, ClusterNodepool.MaxNodes, ClusterNodepool.MinNodes,
-				fmt.Sprintf("%t", ClusterNodepool.MonthlyBilled), ClusterNodepool.Status,
+				ClusterNodepool.Name, strconv.Itoa(ClusterNodepool.CurrentNodes), strconv.Itoa(ClusterNodepool.DesiredNodes),
+				ClusterNodepool.Flavor, strconv.Itoa(ClusterNodepool.MaxNodes), strconv.Itoa(ClusterNodepool.MinNodes),
+				strconv.FormatBool(ClusterNodepool.MonthlyBilled), ClusterNodepool.Status,
 			)
 		}
 
@@ -120,7 +120,7 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 			float64(1),
 			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
 			ClusterDescription.Status, ClusterDescription.UpdatePolicy,
-			fmt.Sprintf("%t", ClusterDescription.IsUpToDate), fmt.Sprintf("%t", ClusterDescription.ControlPlaneIsUpToDate),
+			strconv.FormatBool(lusterDescription.IsUpToDate), strconv.FormatBool(ClusterDescription.ControlPlaneIsUpToDate),
 		)
 	}
 
