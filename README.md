@@ -1,5 +1,11 @@
 # OVH Prometheus Exporter for Managed Kubernetes Clusters.
 
+[![ci](https://github.com/rverchere/ovh-mks-exporter/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/rverchere/ovh-mks-exporter/actions/workflows/docker-publish.yml)
+[![ci](https://github.com/rverchere/ovh-mks-exporter/actions/workflows/go-releaser.yml/badge.svg)](https://github.com/rverchere/ovh-mks-exporter/actions/workflows/go-releaser.yml)
+
+[![Docker Stars](https://img.shields.io/docker/stars/rverchere/ovh-mks-exporter.svg?style=flat)](https://hub.docker.com/r/rverchere/ovh-mks-exporter/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/rverchere/ovh-mks-exporter.svg?style=flat)](https://hub.docker.com/r/rverchere/ovh-mks-exporter/)
+
 ⚠️ This is a work in progress project, and I'm learning GO langage with that simple small project. ⚠️
 
 This exporter retrieves some information from the OVHcloud API, which are not handled directly with k8s internal metrics:
