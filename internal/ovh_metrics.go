@@ -185,7 +185,7 @@ func GetClusterInstance(client *ovh.Client, ServiceName string, InstanceId strin
 	}
 
 	log.Info(fmt.Sprintf("Getting cluster instance information %s", InstanceId))
-	log.Info(res)
+	log.Debug(res)
 	return res
 
 }

@@ -26,14 +26,19 @@ var (
 	ClusterIsUpToDateDesc   = prometheus.NewDesc(ClusterIsUpToDateMetric, ClusterIsUpToDateHelp, []string{"id", "region", "name", "version"}, nil)
 
 	ClusterInfoMetric = "ovh_mks_cluster_info"
-	ClusterInfoHelp   = "OVH Managed Kubernetes Service Informations"
+	ClusterInfoHelp   = "OVH Managed Kubernetes Service Information"
 	ClusterInfoDesc   = prometheus.NewDesc(ClusterInfoMetric, ClusterInfoHelp,
 		[]string{"id", "region", "name", "version", "status", "update_policy", "is_up_to_date", "control_plane_is_up_to_date"}, nil)
 
 	ClusterNodepoolInfoMetric = "ovh_mks_cluster_nodepool_info"
-	ClusterNodepoolInfoHelp   = "OVH Managed Kubernetes Nodepool informations"
+	ClusterNodepoolInfoHelp   = "OVH Managed Kubernetes Nodepool information"
 	ClusterNodepoolInfoDesc   = prometheus.NewDesc(ClusterNodepoolInfoMetric, ClusterNodepoolInfoHelp,
 		[]string{"id", "region", "name", "version", "nodepool_name", "current_nodes", "desired_nodes", "flavor", "max_nodes", "min_nodes", "monthly_billed", "status"}, nil)
+
+	ClusterInstanceInfoMetric = "ovh_mks_cluster_instance_info"
+	ClusterInstanceInfoHelp   = "OVH Managed Kubernetes Instances information"
+	ClusterInstanceInfoDesc   = prometheus.NewDesc(ClusterInstanceInfoMetric, ClusterInstanceInfoHelp,
+		[]string{"id", "region", "name", "nodepool_name", "node_name", "status", "monthly_billed"}, nil)
 
 	StorageContainerCountMetric = "ovh_storage_object_count"
 	StorageContainerCountHelp   = "OVH storage containers object count"
@@ -66,6 +71,7 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- ClusterIsUpToDateDesc
 	ch <- ClusterInfoDesc
 	ch <- ClusterNodepoolInfoDesc
+	ch <- ClusterInstanceInfoDesc
 	ch <- StorageContainerCountDesc
 	ch <- StorageContainerUsageDesc
 	ch <- InfoDesc
@@ -107,7 +113,15 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 			var ClusterNodePoolNodes []Node = GetClusterNodePoolNode(Client, ServiceName, KubeId, ClusterNodepool.Id)
 
 			for _, ClusterNodePoolNode := range ClusterNodePoolNodes {
-				GetClusterInstance(Client, ServiceName, ClusterNodePoolNode.InstanceId)
+				var ClusterInstance Instance = GetClusterInstance(Client, ServiceName, ClusterNodePoolNode.InstanceId)
+				ch <- prometheus.MustNewConstMetric(
+					ClusterInstanceInfoDesc,
+					prometheus.GaugeValue,
+					float64(1),
+					KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterNodepool.Name,
+					ClusterInstance.Name, ClusterInstance.Status, ClusterInstance.MonthyBilling.Status,
+				)
+
 			}
 			ch <- prometheus.MustNewConstMetric(
 				ClusterNodepoolInfoDesc,
