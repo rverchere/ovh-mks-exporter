@@ -1,8 +1,8 @@
 package internal
 
 import (
-	"fmt"
 	"runtime"
+	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -26,9 +26,19 @@ var (
 	ClusterIsUpToDateDesc   = prometheus.NewDesc(ClusterIsUpToDateMetric, ClusterIsUpToDateHelp, []string{"id", "region", "name", "version"}, nil)
 
 	ClusterInfoMetric = "ovh_mks_cluster_info"
-	ClusterInfoHelp   = "OVH Managed Kubernetes Service Informations"
+	ClusterInfoHelp   = "OVH Managed Kubernetes Service Information"
 	ClusterInfoDesc   = prometheus.NewDesc(ClusterInfoMetric, ClusterInfoHelp,
 		[]string{"id", "region", "name", "version", "status", "update_policy", "is_up_to_date", "control_plane_is_up_to_date"}, nil)
+
+	ClusterNodepoolInfoMetric = "ovh_mks_cluster_nodepool_info"
+	ClusterNodepoolInfoHelp   = "OVH Managed Kubernetes Nodepool information"
+	ClusterNodepoolInfoDesc   = prometheus.NewDesc(ClusterNodepoolInfoMetric, ClusterNodepoolInfoHelp,
+		[]string{"id", "region", "name", "version", "nodepool_name", "current_nodes", "desired_nodes", "flavor", "max_nodes", "min_nodes", "monthly_billed", "status"}, nil)
+
+	ClusterInstanceInfoMetric = "ovh_mks_cluster_instance_info"
+	ClusterInstanceInfoHelp   = "OVH Managed Kubernetes Instances information"
+	ClusterInstanceInfoDesc   = prometheus.NewDesc(ClusterInstanceInfoMetric, ClusterInstanceInfoHelp,
+		[]string{"id", "region", "name", "nodepool_name", "node_name", "status", "monthly_billed"}, nil)
 
 	StorageContainerCountMetric = "ovh_storage_object_count"
 	StorageContainerCountHelp   = "OVH storage containers object count"
@@ -49,13 +59,10 @@ var (
 )
 
 func Bool2int(b bool) int {
-	var i int
 	if b {
-		i = 1
-	} else {
-		i = 0
+		return 1
 	}
-	return i
+	return 0
 }
 
 func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
@@ -63,6 +70,8 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- EtcdUsageQuotaDesc
 	ch <- ClusterIsUpToDateDesc
 	ch <- ClusterInfoDesc
+	ch <- ClusterNodepoolInfoDesc
+	ch <- ClusterInstanceInfoDesc
 	ch <- StorageContainerCountDesc
 	ch <- StorageContainerUsageDesc
 	ch <- InfoDesc
@@ -98,13 +107,40 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
 		)
 
+		var ClusterNodepools []NodePool = GetClusterNodePool(Client, ServiceName, KubeId)
+		for _, ClusterNodepool := range ClusterNodepools {
+
+			var ClusterNodePoolNodes []Node = GetClusterNodePoolNode(Client, ServiceName, KubeId, ClusterNodepool.Id)
+
+			for _, ClusterNodePoolNode := range ClusterNodePoolNodes {
+				var ClusterInstance Instance = GetClusterInstance(Client, ServiceName, ClusterNodePoolNode.InstanceId)
+				ch <- prometheus.MustNewConstMetric(
+					ClusterInstanceInfoDesc,
+					prometheus.GaugeValue,
+					float64(1),
+					KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterNodepool.Name,
+					ClusterInstance.Name, ClusterInstance.Status, ClusterInstance.MonthyBilling.Status,
+				)
+
+			}
+			ch <- prometheus.MustNewConstMetric(
+				ClusterNodepoolInfoDesc,
+				prometheus.GaugeValue,
+				float64(1),
+				KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
+				ClusterNodepool.Name, strconv.Itoa(ClusterNodepool.CurrentNodes), strconv.Itoa(ClusterNodepool.DesiredNodes),
+				ClusterNodepool.Flavor, strconv.Itoa(ClusterNodepool.MaxNodes), strconv.Itoa(ClusterNodepool.MinNodes),
+				strconv.FormatBool(ClusterNodepool.MonthlyBilled), ClusterNodepool.Status,
+			)
+		}
+
 		ch <- prometheus.MustNewConstMetric(
 			ClusterInfoDesc,
 			prometheus.GaugeValue,
 			float64(1),
 			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
 			ClusterDescription.Status, ClusterDescription.UpdatePolicy,
-			fmt.Sprintf("%t", ClusterDescription.IsUpToDate), fmt.Sprintf("%t", ClusterDescription.ControlPlaneIsUpToDate),
+			strconv.FormatBool(ClusterDescription.IsUpToDate), strconv.FormatBool(ClusterDescription.ControlPlaneIsUpToDate),
 		)
 	}
 
