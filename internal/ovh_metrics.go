@@ -56,6 +56,46 @@ type StorageContainers struct {
 	Region        string `json:"region"`
 }
 
+type Instance struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	IpAddresses []struct {
+		Ip        string `json:"ip"`
+		Type      string `json:"type"`
+		Version   int    `json:"version"`
+		NetworkId string `json:"networkId"`
+		GatewayIp string `json:"gatewayIp"`
+	} `json:"ipAddresses"`
+	FlavorId      string    `json:"flavorId"`
+	ImageId       string    `json:"imageId"`
+	SshKeyId      string    `json:"sshKeyId"`
+	CreatedAt     time.Time `json:"createdAt"`
+	Region        string    `json:"region"`
+	MonthyBilling struct {
+		Since  string `json:"since"`
+		Status string `json:"status"`
+	} `json:"monthlyBilling,omitempty"`
+	Status                      string   `json:"status"`
+	PlanCode                    string   `json:"planCode"`
+	OperationIds                []string `json:"operationIds,omitempty"`
+	CurrentMonthOutgoingTraffic int64    `json:"currentMonthOutgoingTraffic,omitempty"`
+}
+
+type Node struct {
+	Id          string    `json:"id"`
+	ProjectId   string    `json:"projectId"`
+	InstanceId  string    `json:"instanceId"`
+	NodePoolId  string    `json:"nodePoolId"`
+	Name        string    `json:"name"`
+	Flavor      string    `json:"flavor"`
+	Status      string    `json:"status"`
+	IsUpToDate  bool      `json:"isUpToDate"`
+	Version     string    `json:"Version"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+	DeployeddAt time.Time `json:"deployedAt"`
+}
+
 type NodePool struct {
 	Id             string                `json:"id"`
 	ProjectId      string                `json:"projectId"`
@@ -112,8 +152,42 @@ func GetClusterNodePool(client *ovh.Client, ServiceName string, KubeId string) [
 		log.Fatal(err)
 	}
 
-	log.Info("Getting Cluster Node Pools")
+	log.Info(fmt.Sprintf("Getting cluster nodepools for cluster %s", KubeId))
+	log.Debug(res)
 	return res
+}
+
+func GetClusterNodePoolNode(client *ovh.Client, ServiceName string, KubeId string, NodepoolId string) []Node {
+	NodePoolNodeUrl := fmt.Sprintf("/cloud/project/%s/kube/%s/nodepool/%s/nodes", ServiceName, KubeId, NodepoolId)
+
+	var res []Node
+
+	err := client.Get(NodePoolNodeUrl, &res)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Info(fmt.Sprintf("Getting cluster nodepool node for cluster %s, nodepool %s", KubeId, NodepoolId))
+	log.Debug(res)
+	return res
+
+}
+
+func GetClusterInstance(client *ovh.Client, ServiceName string, InstanceId string) Instance {
+
+	InstanceUrl := fmt.Sprintf("/cloud/project/%s/instance/%s", ServiceName, InstanceId)
+
+	var res Instance
+
+	err := client.Get(InstanceUrl, &res)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Info(fmt.Sprintf("Getting cluster instance information %s", InstanceId))
+	log.Info(res)
+	return res
+
 }
 
 func GetClusterEtcdUsage(client *ovh.Client, ServiceName string, KubeId string) EtcdUsage {
@@ -127,7 +201,7 @@ func GetClusterEtcdUsage(client *ovh.Client, ServiceName string, KubeId string) 
 		log.Fatal(err)
 	}
 
-	log.Info("Getting ETCD Usage")
+	log.Info(fmt.Sprintf("Getting ETCD usage for cluster %s", KubeId))
 	return res
 }
 
@@ -141,7 +215,7 @@ func GetClusterDescription(client *ovh.Client, ServiceName string, KubeId string
 		log.Fatal(err)
 	}
 
-	log.Info("Getting Cluster Description")
+	log.Info(fmt.Sprintf("Getting cluster description for cluster %s", KubeId))
 	return res
 }
 
@@ -155,7 +229,7 @@ func GetClusters(client *ovh.Client, ServiceName string) []string {
 		log.Fatal(err)
 	}
 
-	log.Info("Getting Clusters ID")
+	log.Info(fmt.Sprintf("Getting clusters ID for service %s", ServiceName))
 	return res
 }
 
@@ -170,6 +244,6 @@ func GetStorageContainers(client *ovh.Client, ServicName string) []StorageContai
 		log.Fatal(err)
 	}
 
-	log.Info("Getting Storage Containers information")
+	log.Info(fmt.Sprintf("Getting storage containers information for service %s", ServicName))
 	return res
 }

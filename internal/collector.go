@@ -103,6 +103,12 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 
 		var ClusterNodepools []NodePool = GetClusterNodePool(Client, ServiceName, KubeId)
 		for _, ClusterNodepool := range ClusterNodepools {
+
+			var ClusterNodePoolNodes []Node = GetClusterNodePoolNode(Client, ServiceName, KubeId, ClusterNodepool.Id)
+
+			for _, ClusterNodePoolNode := range ClusterNodePoolNodes {
+				GetClusterInstance(Client, ServiceName, ClusterNodePoolNode.InstanceId)
+			}
 			ch <- prometheus.MustNewConstMetric(
 				ClusterNodepoolInfoDesc,
 				prometheus.GaugeValue,
