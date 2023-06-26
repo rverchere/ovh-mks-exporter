@@ -12,7 +12,8 @@ This exporter retrieves some information from the OVHcloud API, which are not ha
 - etcd quota usage
 - up-to-date cluster version (to check if a security/patch upgrade is available)
 - general information of the clusters
-- Swift storage (objects and usage)
+- instances information of the clusters
+- swift storage (objects and usage)
 
 It retrieves metrics from all clusters and swift containers defined in a public cloud project.
 
@@ -52,14 +53,16 @@ The **servicemonitor** should be changed to match your prometheus installation (
 
 ## Metrics
 
-3 metrics are exported :
+The following metrics are exported:
 
 | Name | Description | Values |
 |------|-------------|--------|
 | ovh_mks_cluster_isuptodate | Cluster is up to date (patch/security version) | 0 (no), 1 (yes) |
 | ovh_mks_etcd_usage_quota_bytes | ETCD quota  max usage | bytes |
 | ovh_mks_etcd_usage_usage_bytes | ETCD current usage | bytes |
-| ovh_mks_cluster_info | Cluster Information (id, name, region, status, etc) | 1 |
+| ovh_mks_cluster_info | Cluster information (id, name, region, status, etc) | 1 |
+| ovh_mks_cluster_nodepool_info | Nodepol information (id, name, nodes number, nodes flavor, etc) | 1 |
+| ovh_mks_cluster_instance_info | Instance information (id, name, billing) | 1 |
 | ovh_storage_object_count | Swift container object count | count |
 | ovh_storage_object_bytes | Swift container object usage | bytes |
 
