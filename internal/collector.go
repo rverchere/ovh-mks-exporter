@@ -51,6 +51,7 @@ var (
 	InfoMetric      = "ovh_mks_exporter_build_info"
 	InfoHelp        = "A metric with a constant '1' value labeled with version, revision, build date, Go version, Go OS, and Go architecture"
 	InfoConstLabels = prometheus.Labels{
+		"version":   Version,
 		"goversion": runtime.Version(),
 		"goos":      runtime.GOOS,
 		"goarch":    runtime.GOARCH,

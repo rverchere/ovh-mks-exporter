@@ -117,14 +117,6 @@ type NodePool struct {
 	Template       *KubeNodePoolTemplate `json:"template,omitempty"`
 }
 
-type TaintEffectType int
-
-type Taint struct {
-	Effect TaintEffectType `json:"effect,omitempty"`
-	Key    string          `json:"key,omitempty"`
-	Value  string          `json:"value,omitempty"`
-}
-
 type KubeNodePoolTemplate struct {
 	Metadata *KubeNodePoolTemplateMetadata `json:"metadata,omitempty"`
 	Spec     *KubeNodePoolTemplateSpec     `json:"spec,omitempty"`
@@ -137,11 +129,17 @@ type KubeNodePoolTemplateMetadata struct {
 }
 
 type KubeNodePoolTemplateSpec struct {
-	Taints        []Taint `json:"taints"`
-	Unschedulable bool    `json:"unschedulable"`
+	Taints []struct {
+		Effect string `json:"effect,omitempty"`
+		Key    string `json:"key,omitempty"`
+		Value  string `json:"value,omitempty"`
+	} `json:"taints"`
+	Unschedulable bool `json:"unschedulable"`
 }
 
 func GetClusterNodePool(client *ovh.Client, ServiceName string, KubeId string) []NodePool {
+
+	log.Info(fmt.Sprintf("Getting cluster nodepools for cluster %s", KubeId))
 
 	NodePoolUrl := fmt.Sprintf("/cloud/project/%s/kube/%s/nodepool", ServiceName, KubeId)
 
@@ -152,12 +150,14 @@ func GetClusterNodePool(client *ovh.Client, ServiceName string, KubeId string) [
 		log.Fatal(err)
 	}
 
-	log.Info(fmt.Sprintf("Getting cluster nodepools for cluster %s", KubeId))
 	log.Debug(res)
 	return res
 }
 
 func GetClusterNodePoolNode(client *ovh.Client, ServiceName string, KubeId string, NodepoolId string) []Node {
+
+	log.Info(fmt.Sprintf("Getting cluster nodepool node for cluster %s, nodepool %s", KubeId, NodepoolId))
+
 	NodePoolNodeUrl := fmt.Sprintf("/cloud/project/%s/kube/%s/nodepool/%s/nodes", ServiceName, KubeId, NodepoolId)
 
 	var res []Node
@@ -167,13 +167,14 @@ func GetClusterNodePoolNode(client *ovh.Client, ServiceName string, KubeId strin
 		log.Fatal(err)
 	}
 
-	log.Info(fmt.Sprintf("Getting cluster nodepool node for cluster %s, nodepool %s", KubeId, NodepoolId))
 	log.Debug(res)
 	return res
 
 }
 
 func GetClusterInstance(client *ovh.Client, ServiceName string, InstanceId string) Instance {
+
+	log.Info(fmt.Sprintf("Getting cluster instance information %s", InstanceId))
 
 	InstanceUrl := fmt.Sprintf("/cloud/project/%s/instance/%s", ServiceName, InstanceId)
 
@@ -184,13 +185,14 @@ func GetClusterInstance(client *ovh.Client, ServiceName string, InstanceId strin
 		log.Fatal(err)
 	}
 
-	log.Info(fmt.Sprintf("Getting cluster instance information %s", InstanceId))
 	log.Debug(res)
 	return res
 
 }
 
 func GetClusterEtcdUsage(client *ovh.Client, ServiceName string, KubeId string) EtcdUsage {
+
+	log.Info(fmt.Sprintf("Getting ETCD usage for cluster %s", KubeId))
 
 	EtcdUsageUrl := fmt.Sprintf("/cloud/project/%s/kube/%s/metrics/etcdUsage", ServiceName, KubeId)
 
@@ -201,11 +203,13 @@ func GetClusterEtcdUsage(client *ovh.Client, ServiceName string, KubeId string) 
 		log.Fatal(err)
 	}
 
-	log.Info(fmt.Sprintf("Getting ETCD usage for cluster %s", KubeId))
+	log.Debug(res)
 	return res
 }
 
 func GetClusterDescription(client *ovh.Client, ServiceName string, KubeId string) ClusterDescription {
+
+	log.Info(fmt.Sprintf("Getting cluster description for cluster %s", KubeId))
 
 	ClusterDescriptionUrl := fmt.Sprintf("/cloud/project/%s/kube/%s", ServiceName, KubeId)
 
@@ -215,11 +219,13 @@ func GetClusterDescription(client *ovh.Client, ServiceName string, KubeId string
 		log.Fatal(err)
 	}
 
-	log.Info(fmt.Sprintf("Getting cluster description for cluster %s", KubeId))
+	log.Debug(res)
 	return res
 }
 
 func GetClusters(client *ovh.Client, ServiceName string) []string {
+
+	log.Info(fmt.Sprintf("Getting clusters ID for service %s", ServiceName))
 
 	ClustersUrl := fmt.Sprintf("/cloud/project/%s/kube", ServiceName)
 	var res []string
@@ -229,11 +235,13 @@ func GetClusters(client *ovh.Client, ServiceName string) []string {
 		log.Fatal(err)
 	}
 
-	log.Info(fmt.Sprintf("Getting clusters ID for service %s", ServiceName))
+	log.Debug(res)
 	return res
 }
 
 func GetStorageContainers(client *ovh.Client, ServicName string) []StorageContainers {
+
+	log.Info(fmt.Sprintf("Getting storage containers information for service %s", ServicName))
 
 	StorageContainersUrl := fmt.Sprintf("/cloud/project/%s/storage", ServiceName)
 
@@ -244,6 +252,6 @@ func GetStorageContainers(client *ovh.Client, ServicName string) []StorageContai
 		log.Fatal(err)
 	}
 
-	log.Info(fmt.Sprintf("Getting storage containers information for service %s", ServicName))
+	log.Debug(res)
 	return res
 }
