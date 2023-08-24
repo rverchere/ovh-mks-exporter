@@ -147,7 +147,7 @@ func GetClusterNodePool(client *ovh.Client, ServiceName string, KubeId string) [
 
 	err := client.Get(NodePoolUrl, &res)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	log.Debug(res)
@@ -164,7 +164,7 @@ func GetClusterNodePoolNode(client *ovh.Client, ServiceName string, KubeId strin
 
 	err := client.Get(NodePoolNodeUrl, &res)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	log.Debug(res)
@@ -182,7 +182,7 @@ func GetClusterInstance(client *ovh.Client, ServiceName string, InstanceId strin
 
 	err := client.Get(InstanceUrl, &res)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	log.Debug(res)
@@ -200,7 +200,7 @@ func GetClusterEtcdUsage(client *ovh.Client, ServiceName string, KubeId string) 
 
 	err := client.Get(EtcdUsageUrl, &res)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	log.Debug(res)
@@ -216,7 +216,7 @@ func GetClusterDescription(client *ovh.Client, ServiceName string, KubeId string
 	var res ClusterDescription
 	err := client.Get(ClusterDescriptionUrl, &res)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	log.Debug(res)
@@ -232,7 +232,7 @@ func GetClusters(client *ovh.Client, ServiceName string) []string {
 
 	err := client.Get(ClustersUrl, &res)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	log.Debug(res)
@@ -249,7 +249,7 @@ func GetStorageContainers(client *ovh.Client, ServicName string) []StorageContai
 
 	err := client.Get(StorageContainersUrl, &res)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	log.Debug(res)
