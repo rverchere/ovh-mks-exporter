@@ -10,7 +10,7 @@ metadata:
 spec:
   endpoints:
     - port: http-metrics
-      interval: 600s
+      interval: 180s
       scrapeTimeout: 60s
   namespaceSelector:
     matchNames:
