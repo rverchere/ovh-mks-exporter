@@ -48,11 +48,11 @@ var (
 
 	StorageContainerCountMetric = "ovh_storage_object_count"
 	StorageContainerCountHelp   = "OVH storage containers object count"
-	StorageContainerCountDesc   = prometheus.NewDesc(StorageContainerCountMetric, StorageContainerCountHelp, []string{"id", "region", "name", "cloud_project_description"}, nil)
+	StorageContainerCountDesc   = prometheus.NewDesc(StorageContainerCountMetric, StorageContainerCountHelp, []string{"cloud_project_description", "id", "region", "name"}, nil)
 
 	StorageContainerUsageMetric = "ovh_storage_object_bytes"
 	StorageContainerUsageHelp   = "OVH storage containers object bytes"
-	StorageContainerUsageDesc   = prometheus.NewDesc(StorageContainerUsageMetric, StorageContainerUsageHelp, []string{"id", "region", "name", "cloud_project_description"}, nil)
+	StorageContainerUsageDesc   = prometheus.NewDesc(StorageContainerUsageMetric, StorageContainerUsageHelp, []string{"cloud_project_description", "id", "region", "name"}, nil)
 
 	InfoMetric      = "ovh_mks_exporter_build_info"
 	InfoHelp        = "A metric with a constant '1' value labeled with version, revision, build date, Go version, Go OS, and Go architecture"
@@ -171,13 +171,13 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 			StorageContainerCountDesc,
 			prometheus.GaugeValue,
 			float64(StorageContainer.StoredObjects),
-			StorageContainer.ID, StorageContainer.Region, StorageContainer.Name, CloudProjectInformation.Description,
+			CloudProjectInformation.Description, StorageContainer.ID, StorageContainer.Region, StorageContainer.Name,
 		)
 		ch <- prometheus.MustNewConstMetric(
 			StorageContainerUsageDesc,
 			prometheus.GaugeValue,
 			float64(StorageContainer.StoredBytes),
-			StorageContainer.ID, StorageContainer.Region, StorageContainer.Name, CloudProjectInformation.Description,
+			CloudProjectInformation.Description, StorageContainer.ID, StorageContainer.Region, StorageContainer.Name,
 		)
 
 	}
