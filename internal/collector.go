@@ -13,6 +13,12 @@ type collector struct {
 
 var (
 	/* Prometheus related vars */
+
+	CloudProjectInfoMetric = "ovh_mks_cloud_info"
+	CloudProjectInfoHelp   = "OVH Public Cloud Information"
+	CloudProjectInfoDesc   = prometheus.NewDesc(CloudProjectInfoMetric, CloudProjectInfoHelp,
+		[]string{"id", "name", "description", "status"}, nil)
+
 	EtcdUsageUsageMetric = "ovh_mks_etcd_usage_usage_bytes"
 	EtcdUsageUsageHelp   = "OVH Managed Kubernetes Service ETCD Usage"
 	EtcdUsageUsageDesc   = prometheus.NewDesc(EtcdUsageUsageMetric, EtcdUsageUsageHelp, []string{"id", "region", "name", "version"}, nil)
@@ -42,11 +48,11 @@ var (
 
 	StorageContainerCountMetric = "ovh_storage_object_count"
 	StorageContainerCountHelp   = "OVH storage containers object count"
-	StorageContainerCountDesc   = prometheus.NewDesc(StorageContainerCountMetric, StorageContainerCountHelp, []string{"id", "region", "name"}, nil)
+	StorageContainerCountDesc   = prometheus.NewDesc(StorageContainerCountMetric, StorageContainerCountHelp, []string{"cloud_project_description", "id", "region", "name"}, nil)
 
 	StorageContainerUsageMetric = "ovh_storage_object_bytes"
 	StorageContainerUsageHelp   = "OVH storage containers object bytes"
-	StorageContainerUsageDesc   = prometheus.NewDesc(StorageContainerUsageMetric, StorageContainerUsageHelp, []string{"id", "region", "name"}, nil)
+	StorageContainerUsageDesc   = prometheus.NewDesc(StorageContainerUsageMetric, StorageContainerUsageHelp, []string{"cloud_project_description", "id", "region", "name"}, nil)
 
 	InfoMetric      = "ovh_mks_exporter_build_info"
 	InfoHelp        = "A metric with a constant '1' value labeled with version, revision, build date, Go version, Go OS, and Go architecture"
@@ -67,6 +73,7 @@ func Bool2int(b bool) int {
 }
 
 func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- CloudProjectInfoDesc
 	ch <- EtcdUsageUsageDesc
 	ch <- EtcdUsageQuotaDesc
 	ch <- ClusterIsUpToDateDesc
@@ -79,6 +86,17 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (collector *collector) Collect(ch chan<- prometheus.Metric) {
+
+	/* Cloud project global information */
+	CloudProjectInformation := GetCloudProjectInformation(Client, ServiceName)
+
+	ch <- prometheus.MustNewConstMetric(
+		CloudProjectInfoDesc,
+		prometheus.GaugeValue,
+		float64(1),
+		CloudProjectInformation.ProjectId, CloudProjectInformation.ProjectName, CloudProjectInformation.Description,
+		CloudProjectInformation.Status,
+	)
 
 	/* Kubernetes Managed Cluster information */
 	var Clusters []string = GetClusters(Client, ServiceName)
@@ -153,13 +171,13 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 			StorageContainerCountDesc,
 			prometheus.GaugeValue,
 			float64(StorageContainer.StoredObjects),
-			StorageContainer.ID, StorageContainer.Region, StorageContainer.Name,
+			CloudProjectInformation.Description, StorageContainer.ID, StorageContainer.Region, StorageContainer.Name,
 		)
 		ch <- prometheus.MustNewConstMetric(
 			StorageContainerUsageDesc,
 			prometheus.GaugeValue,
 			float64(StorageContainer.StoredBytes),
-			StorageContainer.ID, StorageContainer.Region, StorageContainer.Name,
+			CloudProjectInformation.Description, StorageContainer.ID, StorageContainer.Region, StorageContainer.Name,
 		)
 
 	}

@@ -16,6 +16,21 @@ var (
 	KubeId      string
 )
 
+type CloudProjectInformation struct {
+	// https://transform.tools/json-to-go
+	ProjectId    string    `json:"project_id"`
+	ProjectName  string    `json:"projectName,omitempty"`
+	Description  string    `json:"description,omitempty"`
+	PlanCode     string    `json:"planCode"`
+	Unleash      bool      `json:"unleash"`
+	Expiration   time.Time `json:"expiration,omitempty"`
+	CreationDate time.Time `json:"creationDate"`
+	OrderId      int       `json:"orderId,omitempty"`
+	Access       string    `json:"access"`
+	Status       string    `json:"status"`
+	ManualQuota  bool      `json:"manualQuota"`
+}
+
 type EtcdUsage struct {
 	Quota int64 `json:"quota"`
 	Usage int64 `json:"usage"`
@@ -135,6 +150,22 @@ type KubeNodePoolTemplateSpec struct {
 		Value  string `json:"value,omitempty"`
 	} `json:"taints"`
 	Unschedulable bool `json:"unschedulable"`
+}
+
+func GetCloudProjectInformation(client *ovh.Client, ServiceName string) CloudProjectInformation {
+
+	log.Info(fmt.Sprintf("Getting cloud project information fo %s", ServiceName))
+
+	CloudProjectInformationUrl := fmt.Sprintf("/cloud/project/%s", ServiceName)
+
+	var res CloudProjectInformation
+	err := client.Get(CloudProjectInformationUrl, &res)
+	if err != nil {
+		log.Error(err)
+	}
+
+	log.Debug(res)
+	return res
 }
 
 func GetClusterNodePool(client *ovh.Client, ServiceName string, KubeId string) []NodePool {
