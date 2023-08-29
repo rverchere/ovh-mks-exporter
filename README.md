@@ -57,10 +57,11 @@ The following metrics are exported:
 
 | Name | Description | Values |
 |------|-------------|--------|
+[ ovh_mks_cloud_info | Public cloud projet information (id, name, description, status) | 1 |
+| ovh_mks_cluster_info | Cluster information (id, name, region, status, etc) | 1 |
 | ovh_mks_cluster_isuptodate | Cluster is up to date (patch/security version) | 0 (no), 1 (yes) |
 | ovh_mks_etcd_usage_quota_bytes | ETCD quota  max usage | bytes |
 | ovh_mks_etcd_usage_usage_bytes | ETCD current usage | bytes |
-| ovh_mks_cluster_info | Cluster information (id, name, region, status, etc) | 1 |
 | ovh_mks_cluster_nodepool_info | Nodepol information (id, name, nodes number, nodes flavor, etc) | 1 |
 | ovh_mks_cluster_instance_info | Instance information (id, name, billing) | 1 |
 | ovh_storage_object_count | Swift container object count | count |
