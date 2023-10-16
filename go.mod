@@ -3,7 +3,7 @@ module github.com/rverchere/ovh-mks-exporter
 go 1.19
 
 require (
-	github.com/ovh/go-ovh v1.4.1
+	github.com/ovh/go-ovh v1.4.3
 	github.com/prometheus/client_golang v1.16.0
 	github.com/sirupsen/logrus v1.9.3
 )
