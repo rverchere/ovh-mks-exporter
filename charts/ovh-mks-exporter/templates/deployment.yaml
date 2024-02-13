@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ovh-mks-exporter
+  labels:
+    app.kubernetes.io/instance: ovh-mks-exporter
+    app.kubernetes.io/name: ovh-mks-exporter
+    app.kubernetes.io/version: 1.3.3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: ovh-mks-exporter
+      app.kubernetes.io/name: ovh-mks-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: ovh-mks-exporter
+        app.kubernetes.io/name: ovh-mks-exporter
+        app.kubernetes.io/version: 1.3.3
+    spec:
+      containers:
+        - image: rverchere/ovh-mks-exporter:1.3.3
+          name: ovh-mks-exporter
+          env:
+            - name: OVH_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: ovh-mks-exporter
+                  key: OVH_ENDPOINT
+            - name: OVH_APPLICATION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ovh-mks-exporter
+                  key: OVH_APPLICATION_KEY
+            - name: OVH_APPLICATION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ovh-mks-exporter
+                  key: OVH_APPLICATION_SECRET
+            - name: OVH_CONSUMER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ovh-mks-exporter
+                  key: OVH_CONSUMER_KEY
+            - name: OVH_CLOUDPROJECT_SERVICENAME
+              valueFrom:
+                secretKeyRef:
+                  name: ovh-mks-exporter
+                  key: OVH_CLOUDPROJECT_SERVICENAME
+          ports:
+            - name: http-metrics
+              containerPort: 9101
+              protocol: TCP
+
