@@ -1,0 +1,9 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: ovh-mks-etcd-quota
+spec:
+  groups:
+    - name: ovh-mks-etcd-quota.rules
+      rules:
+{{ .Files.Get "rules/rules.txt" | indent 8 }}
