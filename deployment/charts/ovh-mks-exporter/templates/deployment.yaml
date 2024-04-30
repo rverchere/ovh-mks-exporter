@@ -38,27 +38,27 @@ spec:
             - name: OVH_ENDPOINT
               valueFrom:
                 secretKeyRef:
-                  name: ovh-mks-exporter
+                  name: {{ include "ovh-mks-exporter.fullname" . }}
                   key: OVH_ENDPOINT
             - name: OVH_APPLICATION_KEY
               valueFrom:
                 secretKeyRef:
-                  name: ovh-mks-exporter
+                  name: {{ include "ovh-mks-exporter.fullname" . }}
                   key: OVH_APPLICATION_KEY
             - name: OVH_APPLICATION_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: ovh-mks-exporter
+                  name: {{ include "ovh-mks-exporter.fullname" . }}
                   key: OVH_APPLICATION_SECRET
             - name: OVH_CONSUMER_KEY
               valueFrom:
                 secretKeyRef:
-                  name: ovh-mks-exporter
+                  name: {{ include "ovh-mks-exporter.fullname" . }}
                   key: OVH_CONSUMER_KEY
             - name: OVH_CLOUDPROJECT_SERVICENAME
               valueFrom:
                 secretKeyRef:
-                  name: ovh-mks-exporter
+                  name: {{ include "ovh-mks-exporter.fullname" . }}
                   key: OVH_CLOUDPROJECT_SERVICENAME
           ports:
             - name: http-metrics

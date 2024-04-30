@@ -46,3 +46,13 @@ serviceMonitor:
   enabled: true
   # Name of the prometheus helm chart release name
   prometheusReleaseName: prom
+
+# OVH Specific values, if secret not yet created
+ovh:
+  secret:
+    create: false
+  endpoint: ovh-eu
+  applicationKey: ${OVH_APPLICATION_KEY}
+  applicationSecret: ${OVH_APPLICATION_SECRET}
+  consumerKey: ${OVH_CONSUMER_KEY}
+  cloudProjectServiceName: ${OVH_CLOUDPROJECT_SERVICENAME}

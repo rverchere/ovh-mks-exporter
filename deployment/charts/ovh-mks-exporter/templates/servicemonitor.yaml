@@ -2,10 +2,10 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ .Values.ServiceMonitor.prometheusReleaseName }}-{{ include "ovh-mks-exporter.fullname" . }}
+  name: {{ .Values.serviceMonitor.prometheusReleaseName }}-{{ include "ovh-mks-exporter.fullname" . }}
   labels:
     {{- include "ovh-mks-exporter.labels" . | nindent 4 }}
-    release: {{ .Values.ServiceMonitor.prometheusReleaseName }}
+    release: {{ .Values.serviceMonitor.prometheusReleaseName }}
 spec:
   endpoints:
     - port: http-metrics
