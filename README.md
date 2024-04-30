@@ -30,7 +30,6 @@ The application uses only environment variables:
 - OVH_CONSUMER_KEY
 - OVH_CLOUDPROJECT_SERVICENAME: the service name of the OVHcloud Public Cloud Project
 
-
 ## Installation
 
 On a kubernetes environment, you have to:
@@ -44,12 +43,12 @@ kubectl create secret generic ovh-mks-exporter \
     --from-literal=OVH_CONSUMER_KEY=${OVH_CONSUMER_KEY} \
     --from-literal=OVH_CLOUDPROJECT_SERVICENAME=${OVH_CLOUDPROJECT_SERVICENAME}
 ``` 
-2. Deploy application, service and servicemonitor in the ̀deployment` folder (helm chart soon)
+2. Deploy application, service and servicemonitor using the helm chart in the `deployment`folder:
 ```
-kubectl apply -f deployment/
+helm upgrade --install ovh-mks-exporter deployment/charts/ovh-mks-exporter
 ```
 
-The **servicemonitor** should be changed to match your prometheus installation (`release: prom` should differ).
+The **servicemonitor** must be changed to match your prometheus installation (see `prometheusReleaseName`in the values file).
 
 ## Metrics
 
@@ -62,7 +61,7 @@ The following metrics are exported:
 | ovh_mks_cluster_isuptodate | Cluster is up to date (patch/security version) | 0 (no), 1 (yes) |
 | ovh_mks_etcd_usage_quota_bytes | ETCD quota  max usage | bytes |
 | ovh_mks_etcd_usage_usage_bytes | ETCD current usage | bytes |
-| ovh_mks_cluster_nodepool_info | Nodepol information (id, name, nodes number, nodes flavor, etc) | 1 |
+| ovh_mks_cluster_nodepool_info | Nodepool information (id, name, nodes number, nodes flavor, etc) | 1 |
 | ovh_mks_cluster_instance_info | Instance information (id, name, billing) | 1 |
 | ovh_storage_object_count | Swift container object count | count |
 | ovh_storage_object_bytes | Swift container object usage | bytes |
