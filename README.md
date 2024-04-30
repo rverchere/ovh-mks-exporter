@@ -45,7 +45,9 @@ kubectl create secret generic ovh-mks-exporter \
 ``` 
 2. Deploy application, service and servicemonitor using the helm chart in the `deployment`folder:
 ```
-helm upgrade --install ovh-mks-exporter deployment/charts/ovh-mks-exporter
+helm repo add ovh-mks-exporter https://rverchere.github.io/ovh-mks-exporter
+helm repo update
+helm upgrade --install ovh-mks-exporter ovh-mks-exporter/ovh-mks-exporter
 ```
 
 The **servicemonitor** must be changed to match your prometheus installation (see `prometheusReleaseName`in the values file).
