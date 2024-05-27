@@ -3,6 +3,16 @@ entries:
   ovh-mks-exporter:
   - apiVersion: v2
     appVersion: 1.4.0
+    created: "2024-05-27T12:38:59.899375423Z"
+    description: A Helm chart for Kubernetes
+    digest: 4ea98c2bc4269e5724702e660056f3cf0e4cff6e87ca97d5b31e1c5d604cdfa9
+    name: ovh-mks-exporter
+    type: application
+    urls:
+    - https://github.com/rverchere/ovh-mks-exporter/releases/download/ovh-mks-exporter-1.0.1/ovh-mks-exporter-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
+    appVersion: 1.4.0
     created: "2024-04-30T19:28:06.790775981Z"
     description: A Helm chart for Kubernetes
     digest: 6e5c76d73802f51954ba23cbfd2cc831c3a4e68ea69d295616c4dabf34e70732
@@ -11,4 +21,4 @@ entries:
     urls:
     - https://github.com/rverchere/ovh-mks-exporter/releases/download/ovh-mks-exporter-1.0.0/ovh-mks-exporter-1.0.0.tgz
     version: 1.0.0
-generated: "2024-04-30T19:28:06.790781892Z"
+generated: "2024-05-27T12:38:59.899390361Z"
