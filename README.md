@@ -6,8 +6,6 @@
 [![Docker Stars](https://img.shields.io/docker/stars/rverchere/ovh-mks-exporter.svg?style=flat)](https://hub.docker.com/r/rverchere/ovh-mks-exporter/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/rverchere/ovh-mks-exporter.svg?style=flat)](https://hub.docker.com/r/rverchere/ovh-mks-exporter/)
 
-⚠️ This is a work in progress project, and I'm learning GO langage with that simple small project. ⚠️
-
 This exporter retrieves some information from the OVHcloud API, which are not handled directly with k8s internal metrics:
 - etcd quota usage
 - up-to-date cluster version (to check if a security/patch upgrade is available)
