@@ -55,4 +55,4 @@ ovh:
   applicationKey: ${OVH_APPLICATION_KEY}
   applicationSecret: ${OVH_APPLICATION_SECRET}
   consumerKey: ${OVH_CONSUMER_KEY}
-  cloudProjectServiceName: ${OVH_CLOUDPROJECT_SERVICENAME}
+  cloudProjectServiceName: ${OVH_CLOUD_PROJECT_SERVICE}

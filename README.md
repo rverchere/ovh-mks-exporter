@@ -26,7 +26,7 @@ The application uses only environment variables:
 - OVH_APPLICATION_KEY
 - OVH_APPLICATION_SECRET
 - OVH_CONSUMER_KEY
-- OVH_CLOUDPROJECT_SERVICENAME: the service name of the OVHcloud Public Cloud Project
+- OVH_CLOUD_PROJECT_SERVICE: the service name of the OVHcloud Public Cloud Project
 
 ## Installation
 
@@ -39,7 +39,7 @@ kubectl create secret generic ovh-mks-exporter \
     --from-literal=OVH_APPLICATION_KEY=${OVH_APPLICATION_KEY} \
     --from-literal=OVH_APPLICATION_SECRET=${OVH_APPLICATION_SECRET} \
     --from-literal=OVH_CONSUMER_KEY=${OVH_CONSUMER_KEY} \
-    --from-literal=OVH_CLOUDPROJECT_SERVICENAME=${OVH_CLOUDPROJECT_SERVICENAME}
+    --from-literal=OVH_CLOUD_PROJECT_SERVICE=${OVH_CLOUD_PROJECT_SERVICE}
 ``` 
 2. Deploy application, service and servicemonitor using the helm chart in the `deployment`folder:
 ```
