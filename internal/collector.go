@@ -3,8 +3,10 @@ package internal
 import (
 	"runtime"
 	"strconv"
+	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
+	log "github.com/sirupsen/logrus"
 )
 
 type collector struct {
@@ -86,10 +88,12 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (collector *collector) Collect(ch chan<- prometheus.Metric) {
-
-	/* Cloud project global information */
-	CloudProjectInformation := GetCloudProjectInformation(Client, ServiceName)
-
+	// Cloud project global information
+	CloudProjectInformation, err := GetCloudProjectInformation(Client, ServiceName)
+	if err != nil {
+		log.Error("GetCloudProjectInformation: ", err)
+		return
+	}
 	ch <- prometheus.MustNewConstMetric(
 		CloudProjectInfoDesc,
 		prometheus.GaugeValue,
@@ -98,74 +102,106 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 		CloudProjectInformation.Status,
 	)
 
-	/* Kubernetes Managed Cluster information */
-	var Clusters []string = GetClusters(Client, ServiceName)
+	// Kubernetes Managed Cluster information
+	Clusters, err := GetClusters(Client, ServiceName)
+	if err != nil {
+		log.Error("GetClusters: ", err)
+		return
+	}
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 5) // Limit to 5 goroutines in parallel
 
 	for _, KubeId := range Clusters {
-		EtcdUsage := GetClusterEtcdUsage(Client, ServiceName, KubeId)
-		ClusterDescription := GetClusterDescription(Client, ServiceName, KubeId)
+		wg.Add(1)
+		sem <- struct{}{} // block if 5 routines already there
 
-		ch <- prometheus.MustNewConstMetric(
-			EtcdUsageUsageDesc,
-			prometheus.GaugeValue,
-			float64(EtcdUsage.Usage),
-			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
-		)
+		go func(KubeId string) {
+			defer wg.Done()
+			defer func() { <-sem }() // libère une place
 
-		ch <- prometheus.MustNewConstMetric(
-			EtcdUsageQuotaDesc,
-			prometheus.GaugeValue,
-			float64(EtcdUsage.Quota),
-			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
-		)
+			EtcdUsage, err := GetClusterEtcdUsage(Client, ServiceName, KubeId)
+			if err != nil {
+				log.Error("GetClusterEtcdUsage: ", err)
+				return
+			}
+			ClusterDescription, err := GetClusterDescription(Client, ServiceName, KubeId)
+			if err != nil {
+				log.Error("GetClusterDescription: ", err)
+				return
+			}
 
-		ch <- prometheus.MustNewConstMetric(
-			ClusterIsUpToDateDesc,
-			prometheus.GaugeValue,
-			float64(Bool2int(ClusterDescription.IsUpToDate)),
-			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
-		)
+			ch <- prometheus.MustNewConstMetric(
+				EtcdUsageUsageDesc,
+				prometheus.GaugeValue,
+				float64(EtcdUsage.Usage),
+				KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
+			)
+			ch <- prometheus.MustNewConstMetric(
+				EtcdUsageQuotaDesc,
+				prometheus.GaugeValue,
+				float64(EtcdUsage.Quota),
+				KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
+			)
+			ch <- prometheus.MustNewConstMetric(
+				ClusterIsUpToDateDesc,
+				prometheus.GaugeValue,
+				float64(Bool2int(ClusterDescription.IsUpToDate)),
+				KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
+			)
 
-		var ClusterNodepools []NodePool = GetClusterNodePool(Client, ServiceName, KubeId)
-		for _, ClusterNodepool := range ClusterNodepools {
-
-			var ClusterNodePoolNodes []Node = GetClusterNodePoolNode(Client, ServiceName, KubeId, ClusterNodepool.Id)
-
-			for _, ClusterNodePoolNode := range ClusterNodePoolNodes {
-				var ClusterInstance Instance = GetClusterInstance(Client, ServiceName, ClusterNodePoolNode.InstanceId)
+			ClusterNodepools, err := GetClusterNodePool(Client, ServiceName, KubeId)
+			if err != nil {
+				log.Error("GetClusterNodePool: ", err)
+				return
+			}
+			for _, ClusterNodepool := range ClusterNodepools {
+				ClusterNodePoolNodes, err := GetClusterNodePoolNode(Client, ServiceName, KubeId, ClusterNodepool.Id)
+				if err != nil {
+					log.Error("GetClusterNodePoolNode: ", err)
+					continue
+				}
+				for _, ClusterNodePoolNode := range ClusterNodePoolNodes {
+					ClusterInstance, err := GetClusterInstance(Client, ServiceName, ClusterNodePoolNode.InstanceId)
+					if err != nil {
+						log.Error("GetClusterInstance: ", err)
+						continue
+					}
+					ch <- prometheus.MustNewConstMetric(
+						ClusterInstanceInfoDesc,
+						prometheus.GaugeValue,
+						float64(1),
+						KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterNodepool.Name,
+						ClusterInstance.Name, ClusterInstance.Status, ClusterInstance.MonthyBilling.Status,
+					)
+				}
 				ch <- prometheus.MustNewConstMetric(
-					ClusterInstanceInfoDesc,
+					ClusterNodepoolInfoDesc,
 					prometheus.GaugeValue,
 					float64(1),
-					KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterNodepool.Name,
-					ClusterInstance.Name, ClusterInstance.Status, ClusterInstance.MonthyBilling.Status,
+					KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
+					ClusterNodepool.Name, strconv.Itoa(ClusterNodepool.CurrentNodes), strconv.Itoa(ClusterNodepool.DesiredNodes),
+					ClusterNodepool.Flavor, strconv.Itoa(ClusterNodepool.MaxNodes), strconv.Itoa(ClusterNodepool.MinNodes),
+					strconv.FormatBool(ClusterNodepool.MonthlyBilled), ClusterNodepool.Status,
 				)
-
 			}
 			ch <- prometheus.MustNewConstMetric(
-				ClusterNodepoolInfoDesc,
+				ClusterInfoDesc,
 				prometheus.GaugeValue,
 				float64(1),
 				KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
-				ClusterNodepool.Name, strconv.Itoa(ClusterNodepool.CurrentNodes), strconv.Itoa(ClusterNodepool.DesiredNodes),
-				ClusterNodepool.Flavor, strconv.Itoa(ClusterNodepool.MaxNodes), strconv.Itoa(ClusterNodepool.MinNodes),
-				strconv.FormatBool(ClusterNodepool.MonthlyBilled), ClusterNodepool.Status,
+				ClusterDescription.Status, ClusterDescription.UpdatePolicy,
+				strconv.FormatBool(ClusterDescription.IsUpToDate), strconv.FormatBool(ClusterDescription.ControlPlaneIsUpToDate),
 			)
-		}
-
-		ch <- prometheus.MustNewConstMetric(
-			ClusterInfoDesc,
-			prometheus.GaugeValue,
-			float64(1),
-			KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
-			ClusterDescription.Status, ClusterDescription.UpdatePolicy,
-			strconv.FormatBool(ClusterDescription.IsUpToDate), strconv.FormatBool(ClusterDescription.ControlPlaneIsUpToDate),
-		)
+		}(KubeId)
 	}
+	wg.Wait()
 
-	/* Storage Containers (Swift) information */
-	var StorageContainers []StorageContainers = GetStorageContainers(Client, ServiceName)
-
+	// Storage Containers (Swift) information
+	StorageContainers, err := GetStorageContainers(Client, ServiceName)
+	if err != nil {
+		log.Error("GetStorageContainers: ", err)
+		return
+	}
 	for _, StorageContainer := range StorageContainers {
 		ch <- prometheus.MustNewConstMetric(
 			StorageContainerCountDesc,
@@ -179,10 +215,9 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 			float64(StorageContainer.StoredBytes),
 			CloudProjectInformation.Description, StorageContainer.ID, StorageContainer.Region, StorageContainer.Name,
 		)
-
 	}
 
-	/* Application Information */
+	// Application Information
 	ch <- prometheus.MustNewConstMetric(
 		InfoDesc,
 		prometheus.GaugeValue,

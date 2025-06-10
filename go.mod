@@ -1,6 +1,6 @@
 module github.com/rverchere/ovh-mks-exporter
 
-go 1.22
+go 1.24
 
 require (
 	github.com/ovh/go-ovh v1.7.0
