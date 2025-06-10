@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
+	log "github.com/sirupsen/logrus"
 )
 
 type collector struct {
@@ -88,7 +89,11 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 
 func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 	// Cloud project global information
-	CloudProjectInformation := GetCloudProjectInformation(Client, ServiceName)
+	CloudProjectInformation, err := GetCloudProjectInformation(Client, ServiceName)
+	if err != nil {
+		log.Error("GetCloudProjectInformation: ", err)
+		return
+	}
 	ch <- prometheus.MustNewConstMetric(
 		CloudProjectInfoDesc,
 		prometheus.GaugeValue,
@@ -98,8 +103,11 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 	)
 
 	// Kubernetes Managed Cluster information
-	Clusters := GetClusters(Client, ServiceName)
-
+	Clusters, err := GetClusters(Client, ServiceName)
+	if err != nil {
+		log.Error("GetClusters: ", err)
+		return
+	}
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, 5) // Limit to 5 goroutines in parallel
 
@@ -111,8 +119,16 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 			defer wg.Done()
 			defer func() { <-sem }() // libère une place
 
-			EtcdUsage := GetClusterEtcdUsage(Client, ServiceName, KubeId)
-			ClusterDescription := GetClusterDescription(Client, ServiceName, KubeId)
+			EtcdUsage, err := GetClusterEtcdUsage(Client, ServiceName, KubeId)
+			if err != nil {
+				log.Error("GetClusterEtcdUsage: ", err)
+				return
+			}
+			ClusterDescription, err := GetClusterDescription(Client, ServiceName, KubeId)
+			if err != nil {
+				log.Error("GetClusterDescription: ", err)
+				return
+			}
 
 			ch <- prometheus.MustNewConstMetric(
 				EtcdUsageUsageDesc,
@@ -133,11 +149,23 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 				KubeId, ClusterDescription.Region, ClusterDescription.Name, ClusterDescription.Version,
 			)
 
-			ClusterNodepools := GetClusterNodePool(Client, ServiceName, KubeId)
+			ClusterNodepools, err := GetClusterNodePool(Client, ServiceName, KubeId)
+			if err != nil {
+				log.Error("GetClusterNodePool: ", err)
+				return
+			}
 			for _, ClusterNodepool := range ClusterNodepools {
-				ClusterNodePoolNodes := GetClusterNodePoolNode(Client, ServiceName, KubeId, ClusterNodepool.Id)
+				ClusterNodePoolNodes, err := GetClusterNodePoolNode(Client, ServiceName, KubeId, ClusterNodepool.Id)
+				if err != nil {
+					log.Error("GetClusterNodePoolNode: ", err)
+					continue
+				}
 				for _, ClusterNodePoolNode := range ClusterNodePoolNodes {
-					ClusterInstance := GetClusterInstance(Client, ServiceName, ClusterNodePoolNode.InstanceId)
+					ClusterInstance, err := GetClusterInstance(Client, ServiceName, ClusterNodePoolNode.InstanceId)
+					if err != nil {
+						log.Error("GetClusterInstance: ", err)
+						continue
+					}
 					ch <- prometheus.MustNewConstMetric(
 						ClusterInstanceInfoDesc,
 						prometheus.GaugeValue,
@@ -169,7 +197,11 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 	wg.Wait()
 
 	// Storage Containers (Swift) information
-	StorageContainers := GetStorageContainers(Client, ServiceName)
+	StorageContainers, err := GetStorageContainers(Client, ServiceName)
+	if err != nil {
+		log.Error("GetStorageContainers: ", err)
+		return
+	}
 	for _, StorageContainer := range StorageContainers {
 		ch <- prometheus.MustNewConstMetric(
 			StorageContainerCountDesc,
