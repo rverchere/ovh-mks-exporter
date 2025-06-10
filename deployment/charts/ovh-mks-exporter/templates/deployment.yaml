@@ -55,11 +55,11 @@ spec:
                 secretKeyRef:
                   name: {{ include "ovh-mks-exporter.fullname" . }}
                   key: OVH_CONSUMER_KEY
-            - name: OVH_CLOUDPROJECT_SERVICENAME
+            - name: OVH_CLOUD_PROJECT_SERVICE
               valueFrom:
                 secretKeyRef:
                   name: {{ include "ovh-mks-exporter.fullname" . }}
-                  key: OVH_CLOUDPROJECT_SERVICENAME
+                  key: OVH_CLOUD_PROJECT_SERVICE
           ports:
             - name: http-metrics
               containerPort: {{ .Values.service.port }}

@@ -10,8 +10,8 @@ import (
 )
 
 func main() {
-	internal.ServiceName = os.Getenv("OVH_CLOUDPROJECT_SERVICENAME")
-	internal.KubeId = os.Getenv("OVH_CLOUDPROJECT_KUBEID")
+	internal.ServiceName = os.Getenv("OVH_CLOUD_PROJECT_SERVICE")
+	internal.KubeId = os.Getenv("OVH_CLOUD_PROJECT_KUBEID")
 	var err error
 
 	log.SetFormatter(&log.TextFormatter{
