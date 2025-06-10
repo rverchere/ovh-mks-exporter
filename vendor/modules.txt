@@ -16,7 +16,7 @@ github.com/klauspost/compress/zstd/internal/xxhash
 # github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
 ## explicit
 github.com/munnerz/goautoneg
-# github.com/ovh/go-ovh v1.6.0
+# github.com/ovh/go-ovh v1.7.0
 ## explicit; go 1.18
 github.com/ovh/go-ovh/ovh
 # github.com/prometheus/client_golang v1.20.5
