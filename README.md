@@ -30,6 +30,7 @@ The application uses only environment variables:
 | `OVH_APPLICATION_SECRET` | Yes | | OVHcloud application secret |
 | `OVH_CONSUMER_KEY` | Yes | | OVHcloud consumer key |
 | `OVH_CLOUD_PROJECT_SERVICE` | Yes | | Service name of the OVHcloud Public Cloud Project |
+| `OVH_LOG_LEVEL` | No | `info` | Log level: `trace`, `debug`, `info`, `warn`, `error` |
 | `OVH_MAX_RETRIES` | No | `3` | Number of attempts on transient API errors (e.g. EOF). Each retry waits 1s, 2s, 4s… (exponential backoff) |
 | `OVH_S3_REGIONS` | No | _(all regions)_ | Comma-separated list of regions to scrape for S3 metrics (e.g. `GRA,SBG,BHS`). If unset, all regions are queried |
 | `OVH_LB_REGIONS` | No | _(all regions)_ | Comma-separated list of regions to scrape for Load Balancer metrics (e.g. `GRA,SBG`). If unset, all regions are queried |

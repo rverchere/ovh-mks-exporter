@@ -21,10 +21,24 @@ func parseRegions(v string) []string {
 	return regions
 }
 
+func setLogLevel() {
+	level := os.Getenv("OVH_LOG_LEVEL")
+	if level == "" {
+		return
+	}
+	parsed, err := log.ParseLevel(level)
+	if err != nil {
+		log.Warnf("Invalid OVH_LOG_LEVEL %q, using default (info)", level)
+		return
+	}
+	log.SetLevel(parsed)
+}
+
 func main() {
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp: true,
 	})
+	setLogLevel()
 
 	log.Infof("Starting application (version %s)...", internal.Version)
 	// https://www.ovh.com/auth/api/createToken
