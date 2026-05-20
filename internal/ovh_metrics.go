@@ -72,6 +72,23 @@ type S3Container struct {
 	VirtualHost  string `json:"virtualHost"`
 }
 
+type LoadBalancer struct {
+	ID                 string `json:"id"`
+	Name               string `json:"name"`
+	Region             string `json:"region"`
+	OperatingStatus    string `json:"operatingStatus"`
+	ProvisioningStatus string `json:"provisioningStatus"`
+	VipAddress         string `json:"vipAddress"`
+}
+
+type LoadBalancerStats struct {
+	ActiveConnections int64 `json:"activeConnections"`
+	BytesIn           int64 `json:"bytesIn"`
+	BytesOut          int64 `json:"bytesOut"`
+	RequestErrors     int64 `json:"requestErrors"`
+	TotalConnections  int64 `json:"totalConnections"`
+}
+
 type Instance struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -277,6 +294,32 @@ func GetS3Containers(client *ovh.Client, ServiceName string, RegionName string, 
 		var res []S3Container
 		if err := client.Get(url, &res); err != nil {
 			return nil, err
+		}
+		log.Debug(res)
+		return res, nil
+	})
+}
+
+func GetLoadBalancers(client *ovh.Client, ServiceName string, RegionName string, maxRetries int) ([]LoadBalancer, error) {
+	log.Info(fmt.Sprintf("Getting load balancers for service %s in region %s", ServiceName, RegionName))
+	url := fmt.Sprintf("/cloud/project/%s/region/%s/loadbalancing/loadbalancer", ServiceName, RegionName)
+	return retry(maxRetries, func() ([]LoadBalancer, error) {
+		var res []LoadBalancer
+		if err := client.Get(url, &res); err != nil {
+			return nil, err
+		}
+		log.Debug(res)
+		return res, nil
+	})
+}
+
+func GetLoadBalancerStats(client *ovh.Client, ServiceName string, RegionName string, LBID string, maxRetries int) (LoadBalancerStats, error) {
+	log.Info(fmt.Sprintf("Getting load balancer stats for %s in region %s", LBID, RegionName))
+	url := fmt.Sprintf("/cloud/project/%s/region/%s/loadbalancing/loadbalancer/%s/stats", ServiceName, RegionName, LBID)
+	return retry(maxRetries, func() (LoadBalancerStats, error) {
+		var res LoadBalancerStats
+		if err := client.Get(url, &res); err != nil {
+			return res, err
 		}
 		log.Debug(res)
 		return res, nil

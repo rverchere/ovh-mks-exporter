@@ -15,6 +15,7 @@ type Exporter struct {
 	ServiceName string
 	MaxRetries  int
 	S3Regions   []string
+	LBRegions   []string
 }
 
 // ListenAndServe : Convenience function to start exporter

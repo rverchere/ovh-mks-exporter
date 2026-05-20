@@ -64,6 +64,31 @@ var (
 	S3ContainerUsageHelp   = "OVH S3 bucket object bytes"
 	S3ContainerUsageDesc   = prometheus.NewDesc(S3ContainerUsageMetric, S3ContainerUsageHelp, []string{"cloud_project_description", "name", "region"}, nil)
 
+	LBInfoMetric = "ovh_lb_info"
+	LBInfoHelp   = "OVH Load Balancer information"
+	LBInfoDesc   = prometheus.NewDesc(LBInfoMetric, LBInfoHelp,
+		[]string{"id", "name", "region", "operating_status", "provisioning_status", "vip_address"}, nil)
+
+	LBActiveConnectionsMetric = "ovh_lb_active_connections"
+	LBActiveConnectionsHelp   = "OVH Load Balancer active connections"
+	LBActiveConnectionsDesc   = prometheus.NewDesc(LBActiveConnectionsMetric, LBActiveConnectionsHelp, []string{"id", "name", "region"}, nil)
+
+	LBBytesInMetric = "ovh_lb_bytes_in_total"
+	LBBytesInHelp   = "OVH Load Balancer total bytes received"
+	LBBytesInDesc   = prometheus.NewDesc(LBBytesInMetric, LBBytesInHelp, []string{"id", "name", "region"}, nil)
+
+	LBBytesOutMetric = "ovh_lb_bytes_out_total"
+	LBBytesOutHelp   = "OVH Load Balancer total bytes sent"
+	LBBytesOutDesc   = prometheus.NewDesc(LBBytesOutMetric, LBBytesOutHelp, []string{"id", "name", "region"}, nil)
+
+	LBRequestErrorsMetric = "ovh_lb_request_errors_total"
+	LBRequestErrorsHelp   = "OVH Load Balancer total request errors"
+	LBRequestErrorsDesc   = prometheus.NewDesc(LBRequestErrorsMetric, LBRequestErrorsHelp, []string{"id", "name", "region"}, nil)
+
+	LBTotalConnectionsMetric = "ovh_lb_connections_total"
+	LBTotalConnectionsHelp   = "OVH Load Balancer total connections handled"
+	LBTotalConnectionsDesc   = prometheus.NewDesc(LBTotalConnectionsMetric, LBTotalConnectionsHelp, []string{"id", "name", "region"}, nil)
+
 	InfoMetric      = "ovh_mks_exporter_build_info"
 	InfoHelp        = "A metric with a constant '1' value labeled with version, revision, build date, Go version, Go OS, and Go architecture"
 	InfoConstLabels = prometheus.Labels{
@@ -94,6 +119,12 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- StorageContainerUsageDesc
 	ch <- S3ContainerCountDesc
 	ch <- S3ContainerUsageDesc
+	ch <- LBInfoDesc
+	ch <- LBActiveConnectionsDesc
+	ch <- LBBytesInDesc
+	ch <- LBBytesOutDesc
+	ch <- LBRequestErrorsDesc
+	ch <- LBTotalConnectionsDesc
 	ch <- InfoDesc
 }
 
@@ -101,6 +132,8 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 	client := collector.exporter.Client
 	serviceName := collector.exporter.ServiceName
 	maxRetries := collector.exporter.MaxRetries
+
+	log.Info("Starting metrics collection")
 
 	// Cloud project global information
 	CloudProjectInformation, err := GetCloudProjectInformation(client, serviceName, maxRetries)
@@ -275,10 +308,60 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 		s3wg.Wait()
 	}
 
+	// Load Balancer information
+	lbRegions := collector.exporter.LBRegions
+	if len(lbRegions) == 0 {
+		lbRegions, err = GetRegions(client, serviceName, maxRetries)
+		if err != nil {
+			log.Error("GetRegions: ", err)
+		}
+	}
+	if len(lbRegions) > 0 {
+		var lbwg sync.WaitGroup
+		lbsem := make(chan struct{}, 5)
+
+		for _, region := range lbRegions {
+			lbwg.Add(1)
+			lbsem <- struct{}{}
+
+			go func(region string) {
+				defer lbwg.Done()
+				defer func() { <-lbsem }()
+
+				lbs, err := GetLoadBalancers(client, serviceName, region, maxRetries)
+				if err != nil {
+					log.Debugf("GetLoadBalancers %s: %v", region, err)
+					return
+				}
+				for _, lb := range lbs {
+					ch <- prometheus.MustNewConstMetric(
+						LBInfoDesc,
+						prometheus.GaugeValue,
+						float64(1),
+						lb.ID, lb.Name, lb.Region, lb.OperatingStatus, lb.ProvisioningStatus, lb.VipAddress,
+					)
+					stats, err := GetLoadBalancerStats(client, serviceName, region, lb.ID, maxRetries)
+					if err != nil {
+						log.Errorf("GetLoadBalancerStats %s/%s: %v", region, lb.ID, err)
+						continue
+					}
+					ch <- prometheus.MustNewConstMetric(LBActiveConnectionsDesc, prometheus.GaugeValue, float64(stats.ActiveConnections), lb.ID, lb.Name, lb.Region)
+					ch <- prometheus.MustNewConstMetric(LBBytesInDesc, prometheus.GaugeValue, float64(stats.BytesIn), lb.ID, lb.Name, lb.Region)
+					ch <- prometheus.MustNewConstMetric(LBBytesOutDesc, prometheus.GaugeValue, float64(stats.BytesOut), lb.ID, lb.Name, lb.Region)
+					ch <- prometheus.MustNewConstMetric(LBRequestErrorsDesc, prometheus.GaugeValue, float64(stats.RequestErrors), lb.ID, lb.Name, lb.Region)
+					ch <- prometheus.MustNewConstMetric(LBTotalConnectionsDesc, prometheus.GaugeValue, float64(stats.TotalConnections), lb.ID, lb.Name, lb.Region)
+				}
+			}(region)
+		}
+		lbwg.Wait()
+	}
+
 	// Application Information
 	ch <- prometheus.MustNewConstMetric(
 		InfoDesc,
 		prometheus.GaugeValue,
 		float64(1),
 	)
+
+	log.Info("Metrics collection completed")
 }

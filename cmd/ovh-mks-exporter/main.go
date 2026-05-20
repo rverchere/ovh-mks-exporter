@@ -11,6 +11,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func parseRegions(v string) []string {
+	var regions []string
+	for _, r := range strings.Split(v, ",") {
+		if r := strings.TrimSpace(r); r != "" {
+			regions = append(regions, r)
+		}
+	}
+	return regions
+}
+
 func main() {
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp: true,
@@ -30,20 +40,12 @@ func main() {
 		}
 	}
 
-	var s3Regions []string
-	if v := os.Getenv("OVH_S3_REGIONS"); v != "" {
-		for _, r := range strings.Split(v, ",") {
-			if r := strings.TrimSpace(r); r != "" {
-				s3Regions = append(s3Regions, r)
-			}
-		}
-	}
-
 	exporter := internal.Exporter{
 		Client:      client,
 		ServiceName: os.Getenv("OVH_CLOUD_PROJECT_SERVICE"),
 		MaxRetries:  maxRetries,
-		S3Regions:   s3Regions,
+		S3Regions:   parseRegions(os.Getenv("OVH_S3_REGIONS")),
+		LBRegions:   parseRegions(os.Getenv("OVH_LB_REGIONS")),
 	}
 	if err := exporter.NewExporter(); err != nil {
 		log.Fatal("failed to start server: ", err)
