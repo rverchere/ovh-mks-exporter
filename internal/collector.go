@@ -4,6 +4,7 @@ import (
 	"runtime"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -89,6 +90,10 @@ var (
 	LBTotalConnectionsHelp   = "OVH Load Balancer total connections handled"
 	LBTotalConnectionsDesc   = prometheus.NewDesc(LBTotalConnectionsMetric, LBTotalConnectionsHelp, []string{"id", "name", "region"}, nil)
 
+	ScrapeDurationMetric = "ovh_mks_scrape_duration_seconds"
+	ScrapeDurationHelp   = "Duration of the last OVH MKS metrics scrape in seconds"
+	ScrapeDurationDesc   = prometheus.NewDesc(ScrapeDurationMetric, ScrapeDurationHelp, nil, nil)
+
 	InfoMetric      = "ovh_mks_exporter_build_info"
 	InfoHelp        = "A metric with a constant '1' value labeled with version, revision, build date, Go version, Go OS, and Go architecture"
 	InfoConstLabels = prometheus.Labels{
@@ -125,6 +130,7 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- LBBytesOutDesc
 	ch <- LBRequestErrorsDesc
 	ch <- LBTotalConnectionsDesc
+	ch <- ScrapeDurationDesc
 	ch <- InfoDesc
 }
 
@@ -133,6 +139,7 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 	serviceName := collector.exporter.ServiceName
 	maxRetries := collector.exporter.MaxRetries
 
+	start := time.Now()
 	log.Info("Starting metrics collection")
 
 	// Cloud project global information
@@ -363,5 +370,7 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 		float64(1),
 	)
 
-	log.Info("Metrics collection completed")
+	duration := time.Since(start).Seconds()
+	ch <- prometheus.MustNewConstMetric(ScrapeDurationDesc, prometheus.GaugeValue, duration)
+	log.Infof("Metrics collection completed in %.2fs", duration)
 }

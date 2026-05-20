@@ -1,7 +1,12 @@
 package internal
 
 import (
+	"context"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/ovh/go-ovh/ovh"
 	log "github.com/sirupsen/logrus"
@@ -18,7 +23,6 @@ type Exporter struct {
 	LBRegions   []string
 }
 
-// ListenAndServe : Convenience function to start exporter
 func (exporter *Exporter) NewExporter() error {
 	err := prometheus.Register(&collector{exporter: exporter})
 	if err != nil {
@@ -32,8 +36,28 @@ func (exporter *Exporter) NewExporter() error {
 
 	log.Info("Starting exporter, enjoy!")
 
-	http.Handle("/metrics", promhttp.Handler())
-	if err := http.ListenAndServe(":9101", nil); err != nil {
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+
+	srv := &http.Server{
+		Addr:    ":9101",
+		Handler: mux,
+	}
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+
+	go func() {
+		<-quit
+		log.Info("Shutting down...")
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Error("Server shutdown error: ", err)
+		}
+	}()
+
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return err
 	}
 	return nil

@@ -171,7 +171,7 @@ type KubeNodePoolTemplateSpec struct {
 }
 
 func GetCloudProjectInformation(client *ovh.Client, ServiceName string, maxRetries int) (CloudProjectInformation, error) {
-	log.Info(fmt.Sprintf("Getting cloud project information for %s", ServiceName))
+	log.Infof("Getting cloud project information for %s", ServiceName)
 	url := fmt.Sprintf("/cloud/project/%s", ServiceName)
 	return retry(maxRetries, func() (CloudProjectInformation, error) {
 		var res CloudProjectInformation
@@ -184,7 +184,7 @@ func GetCloudProjectInformation(client *ovh.Client, ServiceName string, maxRetri
 }
 
 func GetClusterNodePool(client *ovh.Client, ServiceName string, KubeId string, maxRetries int) ([]NodePool, error) {
-	log.Info(fmt.Sprintf("Getting cluster nodepools for cluster %s", KubeId))
+	log.Infof("Getting cluster nodepools for cluster %s", KubeId)
 	url := fmt.Sprintf("/cloud/project/%s/kube/%s/nodepool", ServiceName, KubeId)
 	return retry(maxRetries, func() ([]NodePool, error) {
 		var res []NodePool
@@ -197,7 +197,7 @@ func GetClusterNodePool(client *ovh.Client, ServiceName string, KubeId string, m
 }
 
 func GetClusterNodePoolNode(client *ovh.Client, ServiceName string, KubeId string, NodepoolId string, maxRetries int) ([]Node, error) {
-	log.Info(fmt.Sprintf("Getting cluster nodepool node for cluster %s, nodepool %s", KubeId, NodepoolId))
+	log.Infof("Getting cluster nodepool node for cluster %s, nodepool %s", KubeId, NodepoolId)
 	url := fmt.Sprintf("/cloud/project/%s/kube/%s/nodepool/%s/nodes", ServiceName, KubeId, NodepoolId)
 	return retry(maxRetries, func() ([]Node, error) {
 		var res []Node
@@ -210,7 +210,7 @@ func GetClusterNodePoolNode(client *ovh.Client, ServiceName string, KubeId strin
 }
 
 func GetClusterInstance(client *ovh.Client, ServiceName string, InstanceId string, maxRetries int) (Instance, error) {
-	log.Info(fmt.Sprintf("Getting cluster instance information %s", InstanceId))
+	log.Infof("Getting cluster instance information %s", InstanceId)
 	url := fmt.Sprintf("/cloud/project/%s/instance/%s", ServiceName, InstanceId)
 	return retry(maxRetries, func() (Instance, error) {
 		var res Instance
@@ -223,7 +223,7 @@ func GetClusterInstance(client *ovh.Client, ServiceName string, InstanceId strin
 }
 
 func GetClusterEtcdUsage(client *ovh.Client, ServiceName string, KubeId string, maxRetries int) (EtcdUsage, error) {
-	log.Info(fmt.Sprintf("Getting ETCD usage for cluster %s", KubeId))
+	log.Infof("Getting ETCD usage for cluster %s", KubeId)
 	url := fmt.Sprintf("/cloud/project/%s/kube/%s/metrics/etcdUsage", ServiceName, KubeId)
 	return retry(maxRetries, func() (EtcdUsage, error) {
 		var res EtcdUsage
@@ -236,7 +236,7 @@ func GetClusterEtcdUsage(client *ovh.Client, ServiceName string, KubeId string, 
 }
 
 func GetClusterDescription(client *ovh.Client, ServiceName string, KubeId string, maxRetries int) (ClusterDescription, error) {
-	log.Info(fmt.Sprintf("Getting cluster description for cluster %s", KubeId))
+	log.Infof("Getting cluster description for cluster %s", KubeId)
 	url := fmt.Sprintf("/cloud/project/%s/kube/%s", ServiceName, KubeId)
 	return retry(maxRetries, func() (ClusterDescription, error) {
 		var res ClusterDescription
@@ -249,7 +249,7 @@ func GetClusterDescription(client *ovh.Client, ServiceName string, KubeId string
 }
 
 func GetClusters(client *ovh.Client, ServiceName string, maxRetries int) ([]string, error) {
-	log.Info(fmt.Sprintf("Getting clusters ID for service %s", ServiceName))
+	log.Infof("Getting clusters ID for service %s", ServiceName)
 	url := fmt.Sprintf("/cloud/project/%s/kube", ServiceName)
 	return retry(maxRetries, func() ([]string, error) {
 		var res []string
@@ -262,7 +262,7 @@ func GetClusters(client *ovh.Client, ServiceName string, maxRetries int) ([]stri
 }
 
 func GetStorageContainers(client *ovh.Client, ServiceName string, maxRetries int) ([]StorageContainers, error) {
-	log.Info(fmt.Sprintf("Getting storage containers information for service %s", ServiceName))
+	log.Infof("Getting storage containers information for service %s", ServiceName)
 	url := fmt.Sprintf("/cloud/project/%s/storage", ServiceName)
 	return retry(maxRetries, func() ([]StorageContainers, error) {
 		var res []StorageContainers
@@ -275,7 +275,7 @@ func GetStorageContainers(client *ovh.Client, ServiceName string, maxRetries int
 }
 
 func GetRegions(client *ovh.Client, ServiceName string, maxRetries int) ([]string, error) {
-	log.Info(fmt.Sprintf("Getting regions for service %s", ServiceName))
+	log.Infof("Getting regions for service %s", ServiceName)
 	url := fmt.Sprintf("/cloud/project/%s/region", ServiceName)
 	return retry(maxRetries, func() ([]string, error) {
 		var res []string
@@ -288,7 +288,7 @@ func GetRegions(client *ovh.Client, ServiceName string, maxRetries int) ([]strin
 }
 
 func GetS3Containers(client *ovh.Client, ServiceName string, RegionName string, maxRetries int) ([]S3Container, error) {
-	log.Info(fmt.Sprintf("Getting S3 containers for service %s in region %s", ServiceName, RegionName))
+	log.Infof("Getting S3 containers for service %s in region %s", ServiceName, RegionName)
 	url := fmt.Sprintf("/cloud/project/%s/region/%s/storage", ServiceName, RegionName)
 	return retry(maxRetries, func() ([]S3Container, error) {
 		var res []S3Container
@@ -301,7 +301,7 @@ func GetS3Containers(client *ovh.Client, ServiceName string, RegionName string, 
 }
 
 func GetLoadBalancers(client *ovh.Client, ServiceName string, RegionName string, maxRetries int) ([]LoadBalancer, error) {
-	log.Info(fmt.Sprintf("Getting load balancers for service %s in region %s", ServiceName, RegionName))
+	log.Infof("Getting load balancers for service %s in region %s", ServiceName, RegionName)
 	url := fmt.Sprintf("/cloud/project/%s/region/%s/loadbalancing/loadbalancer", ServiceName, RegionName)
 	return retry(maxRetries, func() ([]LoadBalancer, error) {
 		var res []LoadBalancer
@@ -314,7 +314,7 @@ func GetLoadBalancers(client *ovh.Client, ServiceName string, RegionName string,
 }
 
 func GetLoadBalancerStats(client *ovh.Client, ServiceName string, RegionName string, LBID string, maxRetries int) (LoadBalancerStats, error) {
-	log.Info(fmt.Sprintf("Getting load balancer stats for %s in region %s", LBID, RegionName))
+	log.Infof("Getting load balancer stats for %s in region %s", LBID, RegionName)
 	url := fmt.Sprintf("/cloud/project/%s/region/%s/loadbalancing/loadbalancer/%s/stats", ServiceName, RegionName, LBID)
 	return retry(maxRetries, func() (LoadBalancerStats, error) {
 		var res LoadBalancerStats
