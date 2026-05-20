@@ -79,6 +79,8 @@ The following metrics are exported:
 | ovh_lb_bytes_out_total | Load Balancer total bytes sent | bytes |
 | ovh_lb_request_errors_total | Load Balancer total request errors | count |
 | ovh_lb_connections_total | Load Balancer total connections handled | count |
+| ovh_mks_scrape_duration_seconds | Duration of the last metrics scrape | seconds |
+| ovh_mks_exporter_build_info | Exporter build information (version, goversion, goos, goarch) | 1 |
 
 ## Example
 

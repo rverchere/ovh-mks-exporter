@@ -38,6 +38,9 @@ func (exporter *Exporter) NewExporter() error {
 
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 
 	srv := &http.Server{
 		Addr:    ":9101",

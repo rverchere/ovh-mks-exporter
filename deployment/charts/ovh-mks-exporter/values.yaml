@@ -34,7 +34,29 @@ service:
   type: ClusterIP
   port: 9101
 
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http-metrics
+  initialDelaySeconds: 5
+  periodSeconds: 30
+
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: http-metrics
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
 resources: {}
+
+config:
+  # Number of retry attempts on transient API errors
+  maxRetries: 3
+  # Comma-separated list of regions to scrape for S3 metrics (empty = all regions)
+  s3Regions: ""
+  # Comma-separated list of regions to scrape for Load Balancer metrics (empty = all regions)
+  lbRegions: ""
 
 nodeSelector: {}
 

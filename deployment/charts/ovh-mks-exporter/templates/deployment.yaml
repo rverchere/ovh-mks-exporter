@@ -60,10 +60,24 @@ spec:
                 secretKeyRef:
                   name: {{ include "ovh-mks-exporter.fullname" . }}
                   key: OVH_CLOUD_PROJECT_SERVICE
+            - name: OVH_MAX_RETRIES
+              value: {{ .Values.config.maxRetries | quote }}
+            {{- if .Values.config.s3Regions }}
+            - name: OVH_S3_REGIONS
+              value: {{ .Values.config.s3Regions | quote }}
+            {{- end }}
+            {{- if .Values.config.lbRegions }}
+            - name: OVH_LB_REGIONS
+              value: {{ .Values.config.lbRegions | quote }}
+            {{- end }}
           ports:
             - name: http-metrics
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
