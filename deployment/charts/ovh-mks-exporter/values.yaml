@@ -46,6 +46,8 @@ serviceMonitor:
   enabled: true
   # Name of the prometheus helm chart release name
   prometheusReleaseName: prom
+  interval: 180s
+  scrapeTimeout: 60s
 
 # OVH Specific values, if secret not yet created
 ovh:
