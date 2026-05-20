@@ -14,6 +14,7 @@ type Exporter struct {
 	Client      *ovh.Client
 	ServiceName string
 	MaxRetries  int
+	S3Regions   []string
 }
 
 // ListenAndServe : Convenience function to start exporter

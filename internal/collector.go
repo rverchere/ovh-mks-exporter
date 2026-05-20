@@ -56,6 +56,14 @@ var (
 	StorageContainerUsageHelp   = "OVH storage containers object bytes"
 	StorageContainerUsageDesc   = prometheus.NewDesc(StorageContainerUsageMetric, StorageContainerUsageHelp, []string{"cloud_project_description", "id", "region", "name"}, nil)
 
+	S3ContainerCountMetric = "ovh_s3_object_count"
+	S3ContainerCountHelp   = "OVH S3 bucket object count"
+	S3ContainerCountDesc   = prometheus.NewDesc(S3ContainerCountMetric, S3ContainerCountHelp, []string{"cloud_project_description", "name", "region"}, nil)
+
+	S3ContainerUsageMetric = "ovh_s3_object_bytes"
+	S3ContainerUsageHelp   = "OVH S3 bucket object bytes"
+	S3ContainerUsageDesc   = prometheus.NewDesc(S3ContainerUsageMetric, S3ContainerUsageHelp, []string{"cloud_project_description", "name", "region"}, nil)
+
 	InfoMetric      = "ovh_mks_exporter_build_info"
 	InfoHelp        = "A metric with a constant '1' value labeled with version, revision, build date, Go version, Go OS, and Go architecture"
 	InfoConstLabels = prometheus.Labels{
@@ -84,6 +92,8 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- ClusterInstanceInfoDesc
 	ch <- StorageContainerCountDesc
 	ch <- StorageContainerUsageDesc
+	ch <- S3ContainerCountDesc
+	ch <- S3ContainerUsageDesc
 	ch <- InfoDesc
 }
 
@@ -219,6 +229,50 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 			float64(StorageContainer.StoredBytes),
 			CloudProjectInformation.Description, StorageContainer.ID, StorageContainer.Region, StorageContainer.Name,
 		)
+	}
+
+	// S3 Containers information
+	s3Regions := collector.exporter.S3Regions
+	if len(s3Regions) == 0 {
+		s3Regions, err = GetRegions(client, serviceName, maxRetries)
+		if err != nil {
+			log.Error("GetRegions: ", err)
+		}
+	}
+	if len(s3Regions) > 0 {
+		var s3wg sync.WaitGroup
+		s3sem := make(chan struct{}, 5)
+
+		for _, region := range s3Regions {
+			s3wg.Add(1)
+			s3sem <- struct{}{}
+
+			go func(region string) {
+				defer s3wg.Done()
+				defer func() { <-s3sem }()
+
+				s3Containers, err := GetS3Containers(client, serviceName, region, maxRetries)
+				if err != nil {
+					log.Debugf("GetS3Containers %s: %v", region, err)
+					return
+				}
+				for _, container := range s3Containers {
+					ch <- prometheus.MustNewConstMetric(
+						S3ContainerCountDesc,
+						prometheus.GaugeValue,
+						float64(container.ObjectsCount),
+						CloudProjectInformation.Description, container.Name, container.Region,
+					)
+					ch <- prometheus.MustNewConstMetric(
+						S3ContainerUsageDesc,
+						prometheus.GaugeValue,
+						float64(container.ObjectsSize),
+						CloudProjectInformation.Description, container.Name, container.Region,
+					)
+				}
+			}(region)
+		}
+		s3wg.Wait()
 	}
 
 	// Application Information

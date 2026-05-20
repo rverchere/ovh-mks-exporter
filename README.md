@@ -31,6 +31,7 @@ The application uses only environment variables:
 | `OVH_CONSUMER_KEY` | Yes | | OVHcloud consumer key |
 | `OVH_CLOUD_PROJECT_SERVICE` | Yes | | Service name of the OVHcloud Public Cloud Project |
 | `OVH_MAX_RETRIES` | No | `3` | Number of attempts on transient API errors (e.g. EOF). Each retry waits 1s, 2s, 4s… (exponential backoff) |
+| `OVH_S3_REGIONS` | No | _(all regions)_ | Comma-separated list of regions to scrape for S3 metrics (e.g. `GRA,SBG,BHS`). If unset, all regions are queried |
 
 ## Installation
 
@@ -69,6 +70,8 @@ The following metrics are exported:
 | ovh_mks_cluster_instance_info | Instance information (id, name, billing) | 1 |
 | ovh_storage_object_count | Swift container object count | count |
 | ovh_storage_object_bytes | Swift container object usage | bytes |
+| ovh_s3_object_count | S3 bucket object count | count |
+| ovh_s3_object_bytes | S3 bucket object bytes | bytes |
 
 ## Example
 

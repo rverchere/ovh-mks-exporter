@@ -64,6 +64,14 @@ type StorageContainers struct {
 	Region        string `json:"region"`
 }
 
+type S3Container struct {
+	Name         string `json:"name"`
+	Region       string `json:"region"`
+	ObjectsCount int64  `json:"objectsCount"`
+	ObjectsSize  int64  `json:"objectsSize"`
+	VirtualHost  string `json:"virtualHost"`
+}
+
 type Instance struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -241,6 +249,32 @@ func GetStorageContainers(client *ovh.Client, ServiceName string, maxRetries int
 	url := fmt.Sprintf("/cloud/project/%s/storage", ServiceName)
 	return retry(maxRetries, func() ([]StorageContainers, error) {
 		var res []StorageContainers
+		if err := client.Get(url, &res); err != nil {
+			return nil, err
+		}
+		log.Debug(res)
+		return res, nil
+	})
+}
+
+func GetRegions(client *ovh.Client, ServiceName string, maxRetries int) ([]string, error) {
+	log.Info(fmt.Sprintf("Getting regions for service %s", ServiceName))
+	url := fmt.Sprintf("/cloud/project/%s/region", ServiceName)
+	return retry(maxRetries, func() ([]string, error) {
+		var res []string
+		if err := client.Get(url, &res); err != nil {
+			return nil, err
+		}
+		log.Debug(res)
+		return res, nil
+	})
+}
+
+func GetS3Containers(client *ovh.Client, ServiceName string, RegionName string, maxRetries int) ([]S3Container, error) {
+	log.Info(fmt.Sprintf("Getting S3 containers for service %s in region %s", ServiceName, RegionName))
+	url := fmt.Sprintf("/cloud/project/%s/region/%s/storage", ServiceName, RegionName)
+	return retry(maxRetries, func() ([]S3Container, error) {
+		var res []S3Container
 		if err := client.Get(url, &res); err != nil {
 			return nil, err
 		}
