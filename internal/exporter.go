@@ -13,6 +13,7 @@ import (
 type Exporter struct {
 	Client      *ovh.Client
 	ServiceName string
+	MaxRetries  int
 }
 
 // ListenAndServe : Convenience function to start exporter

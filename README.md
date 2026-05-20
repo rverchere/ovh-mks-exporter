@@ -22,11 +22,15 @@ This exporter is inspired by the https://github.com/enix/x509-certificate-export
 You must generate OVHcloud API token here : https://eu.api.ovh.com/createToken/
 
 The application uses only environment variables:
-- OVH_ENDPOINT (default to `ovh-eu`)
-- OVH_APPLICATION_KEY
-- OVH_APPLICATION_SECRET
-- OVH_CONSUMER_KEY
-- OVH_CLOUD_PROJECT_SERVICE: the service name of the OVHcloud Public Cloud Project
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `OVH_ENDPOINT` | No | `ovh-eu` | OVHcloud API endpoint |
+| `OVH_APPLICATION_KEY` | Yes | | OVHcloud application key |
+| `OVH_APPLICATION_SECRET` | Yes | | OVHcloud application secret |
+| `OVH_CONSUMER_KEY` | Yes | | OVHcloud consumer key |
+| `OVH_CLOUD_PROJECT_SERVICE` | Yes | | Service name of the OVHcloud Public Cloud Project |
+| `OVH_MAX_RETRIES` | No | `3` | Number of attempts on transient API errors (e.g. EOF). Each retry waits 1s, 2s, 4s… (exponential backoff) |
 
 ## Installation
 

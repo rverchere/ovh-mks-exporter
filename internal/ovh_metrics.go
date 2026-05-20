@@ -145,143 +145,106 @@ type KubeNodePoolTemplateSpec struct {
 	Unschedulable bool `json:"unschedulable"`
 }
 
-func GetCloudProjectInformation(client *ovh.Client, ServiceName string) (CloudProjectInformation, error) {
-
+func GetCloudProjectInformation(client *ovh.Client, ServiceName string, maxRetries int) (CloudProjectInformation, error) {
 	log.Info(fmt.Sprintf("Getting cloud project information for %s", ServiceName))
-
-	CloudProjectInformationUrl := fmt.Sprintf("/cloud/project/%s", ServiceName)
-
-	var res CloudProjectInformation
-	err := client.Get(CloudProjectInformationUrl, &res)
-	if err != nil {
-		log.Error(err)
-		return res, err
-	}
-
-	log.Debug(res)
-	return res, nil
+	url := fmt.Sprintf("/cloud/project/%s", ServiceName)
+	return retry(maxRetries, func() (CloudProjectInformation, error) {
+		var res CloudProjectInformation
+		if err := client.Get(url, &res); err != nil {
+			return res, err
+		}
+		log.Debug(res)
+		return res, nil
+	})
 }
 
-func GetClusterNodePool(client *ovh.Client, ServiceName string, KubeId string) ([]NodePool, error) {
-
+func GetClusterNodePool(client *ovh.Client, ServiceName string, KubeId string, maxRetries int) ([]NodePool, error) {
 	log.Info(fmt.Sprintf("Getting cluster nodepools for cluster %s", KubeId))
-
-	NodePoolUrl := fmt.Sprintf("/cloud/project/%s/kube/%s/nodepool", ServiceName, KubeId)
-
-	var res []NodePool
-
-	err := client.Get(NodePoolUrl, &res)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	log.Debug(res)
-	return res, nil
+	url := fmt.Sprintf("/cloud/project/%s/kube/%s/nodepool", ServiceName, KubeId)
+	return retry(maxRetries, func() ([]NodePool, error) {
+		var res []NodePool
+		if err := client.Get(url, &res); err != nil {
+			return nil, err
+		}
+		log.Debug(res)
+		return res, nil
+	})
 }
 
-func GetClusterNodePoolNode(client *ovh.Client, ServiceName string, KubeId string, NodepoolId string) ([]Node, error) {
-
+func GetClusterNodePoolNode(client *ovh.Client, ServiceName string, KubeId string, NodepoolId string, maxRetries int) ([]Node, error) {
 	log.Info(fmt.Sprintf("Getting cluster nodepool node for cluster %s, nodepool %s", KubeId, NodepoolId))
-
-	NodePoolNodeUrl := fmt.Sprintf("/cloud/project/%s/kube/%s/nodepool/%s/nodes", ServiceName, KubeId, NodepoolId)
-
-	var res []Node
-
-	err := client.Get(NodePoolNodeUrl, &res)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	log.Debug(res)
-	return res, nil
+	url := fmt.Sprintf("/cloud/project/%s/kube/%s/nodepool/%s/nodes", ServiceName, KubeId, NodepoolId)
+	return retry(maxRetries, func() ([]Node, error) {
+		var res []Node
+		if err := client.Get(url, &res); err != nil {
+			return nil, err
+		}
+		log.Debug(res)
+		return res, nil
+	})
 }
 
-func GetClusterInstance(client *ovh.Client, ServiceName string, InstanceId string) (Instance, error) {
-
+func GetClusterInstance(client *ovh.Client, ServiceName string, InstanceId string, maxRetries int) (Instance, error) {
 	log.Info(fmt.Sprintf("Getting cluster instance information %s", InstanceId))
-
-	InstanceUrl := fmt.Sprintf("/cloud/project/%s/instance/%s", ServiceName, InstanceId)
-
-	var res Instance
-
-	err := client.Get(InstanceUrl, &res)
-	if err != nil {
-		log.Error(err)
-		return res, err
-	}
-
-	log.Debug(res)
-	return res, nil
+	url := fmt.Sprintf("/cloud/project/%s/instance/%s", ServiceName, InstanceId)
+	return retry(maxRetries, func() (Instance, error) {
+		var res Instance
+		if err := client.Get(url, &res); err != nil {
+			return res, err
+		}
+		log.Debug(res)
+		return res, nil
+	})
 }
 
-func GetClusterEtcdUsage(client *ovh.Client, ServiceName string, KubeId string) (EtcdUsage, error) {
-
+func GetClusterEtcdUsage(client *ovh.Client, ServiceName string, KubeId string, maxRetries int) (EtcdUsage, error) {
 	log.Info(fmt.Sprintf("Getting ETCD usage for cluster %s", KubeId))
-
-	EtcdUsageUrl := fmt.Sprintf("/cloud/project/%s/kube/%s/metrics/etcdUsage", ServiceName, KubeId)
-
-	var res EtcdUsage
-
-	err := client.Get(EtcdUsageUrl, &res)
-	if err != nil {
-		log.Error(err)
-		return res, err
-	}
-
-	log.Debug(res)
-	return res, nil
+	url := fmt.Sprintf("/cloud/project/%s/kube/%s/metrics/etcdUsage", ServiceName, KubeId)
+	return retry(maxRetries, func() (EtcdUsage, error) {
+		var res EtcdUsage
+		if err := client.Get(url, &res); err != nil {
+			return res, err
+		}
+		log.Debug(res)
+		return res, nil
+	})
 }
 
-func GetClusterDescription(client *ovh.Client, ServiceName string, KubeId string) (ClusterDescription, error) {
-
+func GetClusterDescription(client *ovh.Client, ServiceName string, KubeId string, maxRetries int) (ClusterDescription, error) {
 	log.Info(fmt.Sprintf("Getting cluster description for cluster %s", KubeId))
-
-	ClusterDescriptionUrl := fmt.Sprintf("/cloud/project/%s/kube/%s", ServiceName, KubeId)
-
-	var res ClusterDescription
-	err := client.Get(ClusterDescriptionUrl, &res)
-	if err != nil {
-		log.Error(err)
-		return res, err
-	}
-
-	log.Debug(res)
-	return res, nil
+	url := fmt.Sprintf("/cloud/project/%s/kube/%s", ServiceName, KubeId)
+	return retry(maxRetries, func() (ClusterDescription, error) {
+		var res ClusterDescription
+		if err := client.Get(url, &res); err != nil {
+			return res, err
+		}
+		log.Debug(res)
+		return res, nil
+	})
 }
 
-func GetClusters(client *ovh.Client, ServiceName string) ([]string, error) {
-
+func GetClusters(client *ovh.Client, ServiceName string, maxRetries int) ([]string, error) {
 	log.Info(fmt.Sprintf("Getting clusters ID for service %s", ServiceName))
-
-	ClustersUrl := fmt.Sprintf("/cloud/project/%s/kube", ServiceName)
-	var res []string
-
-	err := client.Get(ClustersUrl, &res)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	log.Debug(res)
-	return res, nil
+	url := fmt.Sprintf("/cloud/project/%s/kube", ServiceName)
+	return retry(maxRetries, func() ([]string, error) {
+		var res []string
+		if err := client.Get(url, &res); err != nil {
+			return nil, err
+		}
+		log.Debug(res)
+		return res, nil
+	})
 }
 
-func GetStorageContainers(client *ovh.Client, ServiceName string) ([]StorageContainers, error) {
-
+func GetStorageContainers(client *ovh.Client, ServiceName string, maxRetries int) ([]StorageContainers, error) {
 	log.Info(fmt.Sprintf("Getting storage containers information for service %s", ServiceName))
-
-	StorageContainersUrl := fmt.Sprintf("/cloud/project/%s/storage", ServiceName)
-
-	var res []StorageContainers
-
-	err := client.Get(StorageContainersUrl, &res)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	log.Debug(res)
-	return res, nil
+	url := fmt.Sprintf("/cloud/project/%s/storage", ServiceName)
+	return retry(maxRetries, func() ([]StorageContainers, error) {
+		var res []StorageContainers
+		if err := client.Get(url, &res); err != nil {
+			return nil, err
+		}
+		log.Debug(res)
+		return res, nil
+	})
 }
