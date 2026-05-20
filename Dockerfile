@@ -21,6 +21,7 @@ COPY cmd cmd
 
 RUN CGO_ENABLED=${CGO_ENABLED} GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
   go build -v \
+  -ldflags "-X github.com/rverchere/ovh-mks-exporter/internal.Version=${Version}" \
   ./cmd/ovh-mks-exporter
 
 # Release

@@ -26,7 +26,7 @@ func main() {
 		FullTimestamp: true,
 	})
 
-	log.Info("Starting application...")
+	log.Infof("Starting application (version %s)...", internal.Version)
 	// https://www.ovh.com/auth/api/createToken
 	client, err := ovh.NewDefaultClient()
 	if err != nil {
