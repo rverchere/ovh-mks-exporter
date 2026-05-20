@@ -3,6 +3,7 @@ package internal
 import (
 	"net/http"
 
+	"github.com/ovh/go-ovh/ovh"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -10,8 +11,8 @@ import (
 )
 
 type Exporter struct {
+	Client      *ovh.Client
 	ServiceName string
-	KubeId      string
 }
 
 // ListenAndServe : Convenience function to start exporter
@@ -29,11 +30,8 @@ func (exporter *Exporter) NewExporter() error {
 	log.Info("Starting exporter, enjoy!")
 
 	http.Handle("/metrics", promhttp.Handler())
-	log.Fatal(http.ListenAndServe(":9101", nil))
-
-	if err != nil {
-		log.Fatal("failed to start server: ", err)
+	if err := http.ListenAndServe(":9101", nil); err != nil {
+		return err
 	}
-
 	return nil
 }

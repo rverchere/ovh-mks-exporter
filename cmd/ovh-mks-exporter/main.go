@@ -10,24 +10,22 @@ import (
 )
 
 func main() {
-	internal.ServiceName = os.Getenv("OVH_CLOUD_PROJECT_SERVICE")
-	internal.KubeId = os.Getenv("OVH_CLOUD_PROJECT_KUBEID")
-	var err error
-
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp: true,
 	})
 
 	log.Info("Starting application...")
 	// https://www.ovh.com/auth/api/createToken
-	internal.Client, err = ovh.NewDefaultClient()
+	client, err := ovh.NewDefaultClient()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	exporter := internal.Exporter{}
-	err = exporter.NewExporter()
-	if err != nil {
+	exporter := internal.Exporter{
+		Client:      client,
+		ServiceName: os.Getenv("OVH_CLOUD_PROJECT_SERVICE"),
+	}
+	if err := exporter.NewExporter(); err != nil {
 		log.Fatal("failed to start server: ", err)
 	}
 }

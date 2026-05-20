@@ -9,13 +9,6 @@ import (
 	"github.com/ovh/go-ovh/ovh"
 )
 
-var (
-	// OVH related vars
-	Client      *ovh.Client
-	ServiceName string
-	KubeId      string
-)
-
 type CloudProjectInformation struct {
 	// https://transform.tools/json-to-go
 	ProjectId    string    `json:"project_id"`
@@ -86,7 +79,7 @@ type Instance struct {
 	SshKeyId      string    `json:"sshKeyId"`
 	CreatedAt     time.Time `json:"createdAt"`
 	Region        string    `json:"region"`
-	MonthyBilling struct {
+	MonthlyBilling struct {
 		Since  string `json:"since"`
 		Status string `json:"status"`
 	} `json:"monthlyBilling,omitempty"`
@@ -105,10 +98,10 @@ type Node struct {
 	Flavor      string    `json:"flavor"`
 	Status      string    `json:"status"`
 	IsUpToDate  bool      `json:"isUpToDate"`
-	Version     string    `json:"Version"`
+	Version     string    `json:"version"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
-	DeployeddAt time.Time `json:"deployedAt"`
+	DeployedAt  time.Time `json:"deployedAt"`
 }
 
 type NodePool struct {
@@ -154,7 +147,7 @@ type KubeNodePoolTemplateSpec struct {
 
 func GetCloudProjectInformation(client *ovh.Client, ServiceName string) (CloudProjectInformation, error) {
 
-	log.Info(fmt.Sprintf("Getting cloud project information fo %s", ServiceName))
+	log.Info(fmt.Sprintf("Getting cloud project information for %s", ServiceName))
 
 	CloudProjectInformationUrl := fmt.Sprintf("/cloud/project/%s", ServiceName)
 
@@ -275,9 +268,9 @@ func GetClusters(client *ovh.Client, ServiceName string) ([]string, error) {
 	return res, nil
 }
 
-func GetStorageContainers(client *ovh.Client, ServicName string) ([]StorageContainers, error) {
+func GetStorageContainers(client *ovh.Client, ServiceName string) ([]StorageContainers, error) {
 
-	log.Info(fmt.Sprintf("Getting storage containers information for service %s", ServicName))
+	log.Info(fmt.Sprintf("Getting storage containers information for service %s", ServiceName))
 
 	StorageContainersUrl := fmt.Sprintf("/cloud/project/%s/storage", ServiceName)
 
