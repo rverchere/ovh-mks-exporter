@@ -2,6 +2,7 @@
 
 [![ci](https://github.com/rverchere/ovh-mks-exporter/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/rverchere/ovh-mks-exporter/actions/workflows/docker-publish.yml)
 [![ci](https://github.com/rverchere/ovh-mks-exporter/actions/workflows/go-releaser.yml/badge.svg)](https://github.com/rverchere/ovh-mks-exporter/actions/workflows/go-releaser.yml)
+[![tests](https://github.com/rverchere/ovh-mks-exporter/actions/workflows/go-test.yml/badge.svg)](https://github.com/rverchere/ovh-mks-exporter/actions/workflows/go-test.yml)
 
 [![Docker Stars](https://img.shields.io/docker/stars/rverchere/ovh-mks-exporter.svg?style=flat)](https://hub.docker.com/r/rverchere/ovh-mks-exporter/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/rverchere/ovh-mks-exporter.svg?style=flat)](https://hub.docker.com/r/rverchere/ovh-mks-exporter/)
