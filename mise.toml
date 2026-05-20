@@ -1,0 +1,30 @@
+[tools]
+go = "1.26.3"
+
+[tasks.build]
+description = "Build the ovh-mks-exporter binary"
+run = "go build -v ./cmd/ovh-mks-exporter"
+
+[tasks.test]
+description = "Run all tests"
+run = "go test ./..."
+
+[tasks.fmt]
+description = "Format Go source files"
+run = "go fmt ./..."
+
+[tasks.vet]
+description = "Run go vet"
+run = "go vet ./..."
+
+[tasks.tidy]
+description = "Tidy go modules"
+run = "go mod tidy"
+
+[tasks.clean]
+description = "Remove built binary"
+run = "rm -f ovh-mks-exporter"
+
+[tasks.lint]
+description = "Format, vet, and test"
+depends = ["fmt", "vet", "test"]
