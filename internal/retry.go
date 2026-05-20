@@ -8,6 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var sleepFn = time.Sleep
+
 func isRetryable(err error) bool {
 	var apiErr *ovh.APIError
 	if errors.As(err, &apiErr) {
@@ -31,7 +33,7 @@ func retry[T any](attempts int, fn func() (T, error)) (T, error) {
 		if i < attempts-1 {
 			wait := time.Duration(1<<uint(i)) * time.Second
 			log.Warnf("attempt %d/%d failed: %v, retrying in %s", i+1, attempts, err, wait)
-			time.Sleep(wait)
+			sleepFn(wait)
 		}
 	}
 	return zero, err
