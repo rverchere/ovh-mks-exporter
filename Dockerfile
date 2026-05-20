@@ -15,9 +15,7 @@ WORKDIR /go/src/github.com/rverchere/ovh-mks-exporter
 
 COPY go.mod go.mod
 COPY go.sum go.sum
-
-RUN go mod download
-
+COPY vendor vendor
 COPY internal internal
 COPY cmd cmd
 
