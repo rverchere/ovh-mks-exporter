@@ -12,3 +12,5 @@ go.work
 
 # Go releaser build folder
 dist/
+
+ovh-mks-exporter
