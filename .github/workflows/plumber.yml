@@ -14,7 +14,7 @@ jobs:
   plumber:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: getplumber/plumber@3c06bb97568d4f0cdd35e63356a05a134647659e # v0.3.84
         with:
           threshold: 60      # fail under a 60% Plumber Score
