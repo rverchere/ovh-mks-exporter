@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
-      - uses: getplumber/plumber@a697e9c316b058d279861719c73b87093fb5a60f # v0.3.86
+      - uses: getplumber/plumber@a5fe7a3f77079479e1f6d32ba651a5917b3a9cd6 # v0.3.99
         with:
           threshold: 60      # fail under a 60% Plumber Score
           score-push: true   # publishes a public Plumber Score badge
